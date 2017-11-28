@@ -22,6 +22,7 @@ global wRect w XCENTER rects mids COLORS KEYS PicRating_CC
 
 prompt={'SUBJECT ID' 'Session' 'Do App Rating?' 'Do W Rating'}; %'fMRI? (1 = Y, 0 = N)'};
 defAns={'4444' '1' '1' '1'}; %'0'};
+numCats = 10; % this will likely need changing
 
 answer=inputdlg(prompt,'Please input subject info',1,defAns);
 
@@ -101,10 +102,10 @@ end
 
 %CHECK IF CORRECT AMOUNT OF CATEGORIES WERE CHOSEN
 %CONFIRM HOW MANY CATEGORIES SHOULD BE CHOSEN
-if length(pic_cats_U)~=10
-    error('Not enough categories were chosen for the high calorie foods. You chose %d and 10 are required.',length(pic_cats_U));
-elseif length(pic_cats_H)~=10
-    error('Not enough categories were chosen for the low calorie foods. You chose %d and 10 are required.',length(pic_cats_H));
+if length(pic_cats_U)~=numCats
+    error('Incorrect number of categories were chosen for the high calorie foods. You chose %d and %d are required.',length(pic_cats_U),numCats);
+elseif length(pic_cats_H)~=numCats
+    error('Incorrect number of categories were chosen for the low calorie foods. You chose %d and $d are required.',length(pic_cats_H),numCats);
 end
 
 COLORS = struct;
@@ -207,6 +208,8 @@ end
     %1 = Healthy, 0 = Unhealthy
     pictype = num2cell([zeros(numel(PICS.in.Un),1); ones(numel(PICS.in.H),1)]);
     picnames = [picnames pictype];
+    rng('default')
+    rng('shuffle')
     picnames = picnames(randperm(size(picnames,1)),:);
 
 
