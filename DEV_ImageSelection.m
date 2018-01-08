@@ -19,7 +19,21 @@ inputDir = [studyDir 'Interventions/ImageSelection/input/'];
 %%
 %Input categories.
 categoryIdx = dlmread([inputdir filesep 'categories_' ID '.txt'],'\t');
-            
+
+FOODCATS = {'Chocolate';
+    'Cookies'
+    'Donuts'
+    'IceCream'
+    'NonChocolateCandy'
+    'Fries'
+    'Pizza'
+    'FastFood'
+    'ProcessedMeats'
+    'Barbeque'
+    'SaltySnacks'
+    'SoftDrinks'
+    'UnhealthyPastas'};
+
 COLORS = struct;
 COLORS.BLACK = [0 0 0];
 COLORS.WHITE = [255 255 255];
