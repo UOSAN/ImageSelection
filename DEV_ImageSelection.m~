@@ -1,18 +1,24 @@
-function DEV_ImageSelection(varargin)
+function DEV_ImageSelection()
 % Rate all images in 3 person-specific categories
 % Output file including all pic names, ratings, categories, and tiers (1,2,3)
 
 global wRect w XCENTER rects mids COLORS KEYS PicRating_CC
 
-prompt={'SUBJECT ID'}; %'fMRI? (1 = Y, 0 = N)'};
-defAns={'4444'}; %'0'};
-numCats = 10; % this will likely need changing
+test = input('Is this a test? (0=no, 1=yes): ');
+
+prompt={'SUBJECT ID'};
+defAns={'4444'};
 
 answer=inputdlg(prompt,'Please input subject info',1,defAns);
 
 ID=str2double(answer{1});
 
-studyDir = '~/Dropbox/Devaluation/';
+if test =0
+    studyDir = '~/Dropbox/Devaluation/';
+elseif
+    studyDir = '~/Desktop/ImageSelection/';
+end
+
 imgDir = [studyDir 'Interventions/Images/DevaluationImages/Unhealthy/'];
 inputDir = [studyDir 'Interventions/ImageSelection/input/'];
 outputDir = [studyDir 'Interventions/ImageSelection/ouput/'];
@@ -63,13 +69,13 @@ rangetest = cell2mat(struct2cell(KEYS));
 KEYS.val = min(rangetest):max(rangetest);
 KEYS.all = KEYS.ONE:KEYS.NINE;
 
-%% normal code below.
 try
     cd(imgDir)
 catch
     error('Failed to open or find the image directory as: %s.',imgdir);
 end
 
+% Set up output filename
 outputFile = [outputDir filesep sprintf('ImgRatings_%d.mat',ID)];
 
 if exist(outputFile,'file') == 2;
@@ -81,7 +87,8 @@ if exist(outputFile,'file') == 2;
     end
 end
 
-%Figure out which Unhealthy photos to use...
+% Figure out which unhealthy photos to use:
+
 for ccc = 1:length(subCats);
     %open each category folder
     catFolder = FOODCATS{subCats(ccc)};
@@ -90,29 +97,21 @@ for ccc = 1:length(subCats);
     catch
         error('Tried to open the folder for %s category but failed. Ensure it is saved as %s',FOODCATS{ccc},catFolder)
     end
-    catPics = dir('unhealthy*');
-    for cpn = 1:length(catPics)
-        copyfile(catPics(cpn).name,subj_imgdir)
+    catPics = dir('unhealthy*').name;
+    if exist('subPics')==1
+        subPics = [subPics; catPics];
+    else subPics = catPics;
     end
 end
 
-cd(subj_imgdir);
-PICS = struct;
+% subPics struct can take the place of PICS.in.Un
 
-PICS.in.Un = dir('unhealthy*');
-PICS.in.H = dir('healthy*');
+picNames = subPics.name';
+numPics = size(subPics,1)
 
-if isempty(PICS.in.Un) || isempty(PICS.in.H);
-    error('The image folder was found at %s but no pictures were in it that matched the search function!\nMake sure a folder exists for Participant #%d with the appropriate images contained therein.',subj_imgdir,ID);
-end
-
-picnames = {PICS.in.Un.name PICS.in.H.name}';
-%1 = Healthy, 0 = Unhealthy
-pictype = num2cell([zeros(numel(PICS.in.Un),1); ones(numel(PICS.in.H),1)]);
-picnames = [picnames pictype];
 rng('default')
 rng('shuffle')
-picnames = picnames(randperm(size(picnames,1)),:);
+picNames = picnames(randperm(size(picnames,1)),:);
 
 
 % jitter = BalanceTrials(length(picnames),1,[1 2 3]);

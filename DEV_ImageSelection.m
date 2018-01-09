@@ -7,7 +7,7 @@ global wRect w XCENTER rects mids COLORS KEYS PicRating_CC
 test = input('Is this a test? (0=no, 1=yes): ');
 
 prompt={'SUBJECT ID'};
-defAns={'4444'}; 
+defAns={'4444'};
 
 answer=inputdlg(prompt,'Please input subject info',1,defAns);
 
@@ -68,12 +68,14 @@ KEYS.TEN= KbName('0)');
 rangetest = cell2mat(struct2cell(KEYS));
 KEYS.val = min(rangetest):max(rangetest);
 KEYS.all = KEYS.ONE:KEYS.NINE;
+
 try
     cd(imgDir)
 catch
     error('Failed to open or find the image directory as: %s.',imgdir);
 end
 
+% Set up output filename
 outputFile = [outputDir filesep sprintf('ImgRatings_%d.mat',ID)];
 
 if exist(outputFile,'file') == 2;
@@ -85,7 +87,7 @@ if exist(outputFile,'file') == 2;
     end
 end
 
-% Figure out which Unhealthy photos to use:
+% Figure out which unhealthy photos to use:
 
 for ccc = 1:length(subCats);
     %open each category folder
@@ -95,61 +97,23 @@ for ccc = 1:length(subCats);
     catch
         error('Tried to open the folder for %s category but failed. Ensure it is saved as %s',FOODCATS{ccc},catFolder)
     end
-    catPics = dir('unhealthy*');
-    subPics = [catPics];
+    catPics = dir('unhealthy*').name;
+    if exist('subPics')==1
+        subPics = [subPics; catPics];
+    else subPics = catPics;
+    end
 end
 
-cd(subj_imgdir);
-PICS = struct;
+% subPics struct can take the place of PICS.in.Un
 
-PICS.in.Un = dir('unhealthy*');
-PICS.in.H = dir('healthy*');
+numPics = size(subPics,1)
 
-if isempty(PICS.in.Un) || isempty(PICS.in.H);
-    error('The image folder was found at %s but no pictures were in it that matched the search function!\nMake sure a folder exists for Participant #%d with the appropriate images contained therein.',subj_imgdir,ID);
-end
-
-picnames = {PICS.in.Un.name PICS.in.H.name}';
-%1 = Healthy, 0 = Unhealthy
-pictype = num2cell([zeros(numel(PICS.in.Un),1); ones(numel(PICS.in.H),1)]);
-picnames = [picnames pictype];
 rng('default')
 rng('shuffle')
-picnames = picnames(randperm(size(picnames,1)),:);
+randperm(numPics)
 
+PicRating_CC = struct('filename',picnames(:,1),'PicType',picnames(:,2),'Rate_App',0);
 
-% jitter = BalanceTrials(length(picnames),1,[1 2 3]);
-
-PicRating_CC = struct('filename',picnames(:,1),'PicType',picnames(:,2),'Rate_App',0); %,'Jitter',[],'FixOnset',[],'PicOnset',[],'RatingOnset',[],'RT',[]); %,'Rate_Crave',0);
-
-% for hhh = 1:length(PicRating_CC);
-%
-%     PicRating_CC(hhh).Jitter = jitter(hhh);
-% end
-
-
-%% Keyboard stuff for fMRI...
-% If fMRI is used with ratings, uncomment this section.
-
-% %list devices
-% [keyboardIndices, productNames] = GetKeyboardIndices;
-%
-% isxkeys=strcmp(productNames,'Xkeys');
-%
-% xkeys=keyboardIndices(isxkeys);
-% macbook = keyboardIndices(strcmp(productNames,'Apple Internal Keyboard / Trackpad'));
-%
-% %in case something goes wrong or the keyboard name isn?t exactly right
-% if isempty(macbook)
-%     macbook=-1;
-% end
-%
-% %in case you?re not hooked up to the scanner, then just work off the keyboard
-% if isempty(xkeys)
-%     xkeys=macbook;
-% end
-
-%%
 commandwindow;
 
 %%
@@ -196,7 +160,7 @@ Screen('TextSize',w,35);
 
 %% Dat Grid
 [rects,mids] = DrawRectsGrid(1);
-verbage = {'How appetizing is this food?' 'How much is this food worth to you?'};
+verbage = 'How appetizing is this food?';
 
 %% Intro
 if doapp == 1;
@@ -247,7 +211,7 @@ if doapp == 1;
             
             %         Screen('DrawTexture',w,tpx);
             drawRatings();
-            DrawFormattedText(w,verbage{1},'center',(wRect(4)*.75),COLORS.BLUE);
+            DrawFormattedText(w,verbage,'center',(wRect(4)*.75),COLORS.BLUE);
             Screen('Flip',w);
             %         PicRating_CC(xy).RatingOnset = rateon - scan_sec;
             
@@ -280,7 +244,7 @@ if doapp == 1;
                     end
                     Screen('DrawTexture',w,tpx);
                     drawRatings(keycode);
-                    DrawFormattedText(w,verbage{1},'center',(wRect(4)*.75),COLORS.BLUE);
+                    DrawFormattedText(w,verbage,'center',(wRect(4)*.75),COLORS.BLUE);
                     Screen('Flip',w);
                     WaitSecs(.25);
                     break;
@@ -352,88 +316,6 @@ postsort_U = [postsort_U num2cell(chosenfew_U) cell(length(postsort_U),1)];
 %Turn back into structure
 PicRating.H = cell2struct(postsort_H,fields,2);
 PicRating.U = cell2struct(postsort_U,fields,2);
-
-% savedir = [mfilesdir filesep 'Results'];
-
-% savefilename = sprintf('PicRate_Training_%d.mat',ID);
-% savefile = fullfile(savedir,savefilename);
-
-%%
-if dow == 1;
-    %Dat new grid:
-    [rects,mids] = DrawRectsGrid(2);
-    
-    %List of H & U trials;
-    value_trials = 40;
-    val_trial = [ones(value_trials,1); zeros(value_trials,1)];
-    val_pic = [randperm(value_trials)'; randperm(value_trials)'];
-    val_trial = [val_trial val_pic];
-    val_trial = val_trial(randperm(length(val_trial)),:);
-    
-    % Top40 Healthy & Unhealthy (low/high)
-    % All pics interspersed
-    % One big block
-    % From $0 - 10 ('<$1 $2 $3....$10+')
-    % Instructions to describe the scale.
-    DrawFormattedText(w,'Next we would like you to view some of these images again and rate how much each food is worth to you. Using the number keys along the top of the key board, choose 1 if the food is worth $0 to $1 and up to 10 if the food is worth $10 or more. Note that you will press 0 (zero) at the top of the keyboard to choose "10."\n\nThere is no right or wrong answer, just choose what comes to mind first.\n\nPress any key to continue.','center','center',COLORS.WHITE,60,[],[],1.5);
-    Screen('Flip',w);
-    KbWait([],2);
-    
-    for vt = 1:length(val_trial);
-        DrawFormattedText(w,'+','center','center',COLORS.WHITE);
-        Screen('Flip',w);
-        WaitSecs(.25);
-        
-        valpicnum = val_trial(vt,2);
-        
-        if val_trial(vt,1) == 1; %If healthy trial
-            tp = imread(getfield(PicRating.H,{valpicnum},'name'));
-        elseif val_trial(vt,1) == 0; %if Unhealthy trial
-            tp = imread(getfield(PicRating.U,{valpicnum},'name'));
-        end
-        tpx = Screen('MakeTexture',w,tp);
-        Screen('DrawTexture',w,tpx);
-        
-        drawValues();
-        DrawFormattedText(w,verbage{2},'center',(wRect(4)*.75),COLORS.BLUE);
-        Screen('Flip',w);
-        
-        
-        FlushEvents();
-        while 1
-            [keyisdown, ~, keycode] = KbCheck();
-            if (keyisdown==1 && any(keycode(KEYS.val)))
-                %                     PicRating_CC(xy).RT = rt - rateon;
-                
-                rating_dos = KbName(find(keycode));
-                rating_dos = str2double(rating_dos(1));
-                
-                Screen('DrawTexture',w,tpx);
-                drawValues(keycode);
-                DrawFormattedText(w,verbage{2},'center',(wRect(4)*.75),COLORS.BLUE);
-                Screen('Flip',w);
-                WaitSecs(.25);
-                break;
-            end
-        end
-        %Record response here.
-        
-        if rating_dos == 0; %Zero key is used for 10. Thus check and correct for when they press 0.
-            rating_dos = 10;
-        end
-        
-        if val_trial(vt,1) == 1;
-            PicRating.H(valpicnum).value = rating_dos;
-        elseif val_trial(vt,1) == 0;
-            PicRating.U(valpicnum).value = rating_dos;
-        end
-        
-        Screen('Flip',w);
-        FlushEvents();
-        WaitSecs(.25);
-    end
-    
-end
 
 %% Save dat data
 try
