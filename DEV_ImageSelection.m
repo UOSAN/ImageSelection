@@ -107,12 +107,22 @@ end
 % subPics struct can take the place of PICS.in.Un
 
 numPics = size(subPics,1)
-
 rng('default')
 rng('shuffle')
-randperm(numPics)
+perm = randperm(numPics);
+subPics_shuffled = subPics(perm)
+subPicsArray = struct2cell(subPics_shuffled)'
+save([outputDir filesep 'imagePrezOrder_' ID],subPicsArray(:,1))
 
-PicRating_CC = struct('filename',picnames(:,1),'PicType',picnames(:,2),'Rate_App',0);
+% Make an array of pathnames. Not sure if it'll be needed.
+disjointedPathArray = [subPicsArray(:,2) subPicsArray(:,1)]
+pathArray = {};
+for i = 1:size(disjointedPathArray,1)
+    pathArray{i,1} = [disjointedPathArray{i,1} filesep disjointedPathArray{i,2}];
+end
+
+% ImgRatings used to be called PicRatings_CC
+ImgRatings = struct('filename',picnames(:,1),'PicType',picnames(:,2),'Rate_App',0); % add TIER here!
 
 commandwindow;
 
