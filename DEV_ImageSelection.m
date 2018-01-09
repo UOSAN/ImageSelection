@@ -1,25 +1,31 @@
-function DEV_ImageSelection(varargin)
+function DEV_ImageSelection()
 % Rate all images in 3 person-specific categories
 % Output file including all pic names, ratings, categories, and tiers (1,2,3)
-        
+
 global wRect w XCENTER rects mids COLORS KEYS PicRating_CC
 
-prompt={'SUBJECT ID'}; %'fMRI? (1 = Y, 0 = N)'};
-defAns={'4444'}; %'0'};
-numCats = 10; % this will likely need changing
+test = input('Is this a test? (0=no, 1=yes): ');
+
+prompt={'SUBJECT ID'};
+defAns={'4444'}; 
 
 answer=inputdlg(prompt,'Please input subject info',1,defAns);
 
 ID=str2double(answer{1});
 
-studyDir = '~/Dropbox/Devaluation/';
-imgDir = [studyDir 'Interventions/Images/DevaluationImages/Unhealthy/']; 
+if test =0
+    studyDir = '~/Dropbox/Devaluation/';
+elseif
+    studyDir = '~/Desktop/ImageSelection/';
+end
+
+imgDir = [studyDir 'Interventions/Images/DevaluationImages/Unhealthy/'];
 inputDir = [studyDir 'Interventions/ImageSelection/input/'];
 outputDir = [studyDir 'Interventions/ImageSelection/ouput/'];
 
 %%
 %Input categories.
-categoryIdx = dlmread([inputdir filesep 'categories_' ID '.txt'],'\t');
+subCats = dlmread([inputdir filesep 'categories_' ID '.txt'],'\t');
 
 FOODCATS = {'Barbeque'
     'Chocolate';
@@ -62,75 +68,54 @@ KEYS.TEN= KbName('0)');
 rangetest = cell2mat(struct2cell(KEYS));
 KEYS.val = min(rangetest):max(rangetest);
 KEYS.all = KEYS.ONE:KEYS.NINE;
-
-%% normal code below.
 try
     cd(imgDir)
 catch
     error('Failed to open or find the image directory as: %s.',imgdir);
 end
 
-outputFile = [subj_imgdir filesep sprintf('PicRating_CC_%d-%d.mat',ID,SESS)];
+outputFile = [outputDir filesep sprintf('ImgRatings_%d.mat',ID)];
 
 if exist(outputFile,'file') == 2;
     commandwindow;
     warning('THIS FILE ALREADY EXISTS ARE YOU SURE YOU WANT TO CONTINUE?')
     overwrite = input('Type 1 to over-write file or 0 to cancel and enter in new info: ');
-    if overwrite == 0; 
+    if overwrite == 0;
         error('File already exists. Please double-check and/or re-enter participant number and session information.');
     end
 end
-   
-    %Figure out which Healthy photos to use...
-    for hhh = 1:length(pic_cats_H);
-        %open each category folder
-        cat_folder = FOODCAT.H.Folders{pic_cats_H(hhh)};
-        %Add try/catch to make sure can open each category folder
-        try
-            cd(cat_folder);
-        catch
-            error('Tried to open the folder for %s category but failed. Ensure it is saved as %s',FOODCAT.H.CAT{hhh},cat_folder)
-        end
-        cat_pics = dir('*.png');
-        for cpn = 1:length(cat_pics)
-            copyfile(cat_pics(cpn).name,subj_imgdir)
-        end
-    end
-    
-    cd(imgdir);
-    
-    %Figure out which Unhealthy photos to use...
-    for uuu = 1:length(pic_cats_U);
-        %open each category folder
-        cat_folder = FOODCAT.U.Folders{pic_cats_U(uuu)};
-        try
-            cd(cat_folder);
-        catch
-            error('Tried to open the folder for %s category but failed. Ensure it is saved as %s',FOODCAT.U.CAT{uuu},cat_folder)
-        end
-        cat_pics = dir('*.png');
-        for cpn = 1:length(cat_pics)
-            copyfile(cat_pics(cpn).name,subj_imgdir)
-        end
-    end
-    
-    cd(subj_imgdir);
-    PICS = struct;
-    
-    PICS.in.Un = dir('unhealthy*');
-    PICS.in.H = dir('healthy*');
-    
-    if isempty(PICS.in.Un) || isempty(PICS.in.H);
-        error('The image folder was found at %s but no pictures were in it that matched the search function!\nMake sure a folder exists for Participant #%d with the appropriate images contained therein.',subj_imgdir,ID);
-    end
 
-    picnames = {PICS.in.Un.name PICS.in.H.name}';
-    %1 = Healthy, 0 = Unhealthy
-    pictype = num2cell([zeros(numel(PICS.in.Un),1); ones(numel(PICS.in.H),1)]);
-    picnames = [picnames pictype];
-    rng('default')
-    rng('shuffle')
-    picnames = picnames(randperm(size(picnames,1)),:);
+% Figure out which Unhealthy photos to use:
+
+for ccc = 1:length(subCats);
+    %open each category folder
+    catFolder = FOODCATS{subCats(ccc)};
+    try
+        cd(catFolder);
+    catch
+        error('Tried to open the folder for %s category but failed. Ensure it is saved as %s',FOODCATS{ccc},catFolder)
+    end
+    catPics = dir('unhealthy*');
+    subPics = [catPics];
+end
+
+cd(subj_imgdir);
+PICS = struct;
+
+PICS.in.Un = dir('unhealthy*');
+PICS.in.H = dir('healthy*');
+
+if isempty(PICS.in.Un) || isempty(PICS.in.H);
+    error('The image folder was found at %s but no pictures were in it that matched the search function!\nMake sure a folder exists for Participant #%d with the appropriate images contained therein.',subj_imgdir,ID);
+end
+
+picnames = {PICS.in.Un.name PICS.in.H.name}';
+%1 = Healthy, 0 = Unhealthy
+pictype = num2cell([zeros(numel(PICS.in.Un),1); ones(numel(PICS.in.H),1)]);
+picnames = [picnames pictype];
+rng('default')
+rng('shuffle')
+picnames = picnames(randperm(size(picnames,1)),:);
 
 
 % jitter = BalanceTrials(length(picnames),1,[1 2 3]);
@@ -138,7 +123,7 @@ end
 PicRating_CC = struct('filename',picnames(:,1),'PicType',picnames(:,2),'Rate_App',0); %,'Jitter',[],'FixOnset',[],'PicOnset',[],'RatingOnset',[],'RT',[]); %,'Rate_Crave',0);
 
 % for hhh = 1:length(PicRating_CC);
-%     
+%
 %     PicRating_CC(hhh).Jitter = jitter(hhh);
 % end
 
@@ -148,17 +133,17 @@ PicRating_CC = struct('filename',picnames(:,1),'PicType',picnames(:,2),'Rate_App
 
 % %list devices
 % [keyboardIndices, productNames] = GetKeyboardIndices;
-% 
+%
 % isxkeys=strcmp(productNames,'Xkeys');
-% 
+%
 % xkeys=keyboardIndices(isxkeys);
 % macbook = keyboardIndices(strcmp(productNames,'Apple Internal Keyboard / Trackpad'));
-% 
+%
 % %in case something goes wrong or the keyboard name isn?t exactly right
 % if isempty(macbook)
 %     macbook=-1;
 % end
-% 
+%
 % %in case you?re not hooked up to the scanner, then just work off the keyboard
 % if isempty(xkeys)
 %     xkeys=macbook;
@@ -187,7 +172,7 @@ if DEBUG==1;
     YCENTER=240;
 else
     %change screen resolution
-%     Screen('Resolution',0,1024,768,[],32);
+    %     Screen('Resolution',0,1024,768,[],32);
     
     %this gives the x and y dimensions of our screen, in pixels.
     [swidth, sheight] = Screen('WindowSize', screenNumber);
@@ -200,7 +185,7 @@ end
 %open a window on that monitor. 32 refers to 32 bit color depth (millions of
 %colors), winRect will either be a 1024x768 box, or the whole screen. The
 %function returns a window "w", and a rect that represents the whole
-%screen. 
+%screen.
 [w, wRect]=Screen('OpenWindow', screenNumber, 0,winRect,32,2);
 
 %%
@@ -215,62 +200,62 @@ verbage = {'How appetizing is this food?' 'How much is this food worth to you?'}
 
 %% Intro
 if doapp == 1;
-DrawFormattedText(w,'We are going to show you some pictures of food and have you rate how appetizing each food is.\n\n You will use a scale from 1 to 9, where 1 is "Not at all appetizing" and 9 is "Extremely appetizing."\n\nPress any key to continue.','center','center',COLORS.WHITE,50,[],[],1.5);
-Screen('Flip',w);
-KbWait([],3);
-
-DrawFormattedText(w,'Please use the numbers along the top of the keyboard to select your rating.\n\nPress any key to continue.','center','center',COLORS.WHITE,50,[],[],1.5);
-Screen('Flip',w);
-KbWait([],3);
-
-%% fMRI synch w/trigger
-% if fmri == 1;
-%     DrawFormattedText(w,'Synching with fMRI: Waiting for trigger','center','center',COLORS.WHITE);
-%     Screen('Flip',w);
-%     
-%     scan_sec = KbTriggerWait(KEYS.trigger,xkeys);
-% else
-%     scan_sec = GetSecs();
-% end
-
-%%
-DrawFormattedText(w,'The rating task will now begin.\n\nPress any key to continue.','center','center',COLORS.WHITE,50,[],[],1.5);
-Screen('Flip',w);
-KbWait([],3);
-WaitSecs(1);
-
-
-for x = 1:20:length(PicRating_CC);  %UPDATE TO LENGTH OF GO PICS
-    for y = 1:20;
-        xy = x+(y-1);
-        if xy > length(PicRating_CC)
-            break
-        end
-        
-        DrawFormattedText(w,'+','center','center',COLORS.WHITE);
-        Screen('Flip',w);
-%         PicRating_CC(xy).FixOnset = fixon - scan_sec;
-%         WaitSecs(PicRating_CC(xy).Jitter);
-        WaitSecs(.25);
-        
-        tp = imread(getfield(PicRating_CC,{xy},'filename'));
-        tpx = Screen('MakeTexture',w,tp);          
-        Screen('DrawTexture',w,tpx);
-%         picon = Screen('Flip',w);
-%         PicRating_CC(xy).PicOnset = picon - scan_sec;
-%         WaitSecs(5);
-        
-%         Screen('DrawTexture',w,tpx);
-        drawRatings();
-        DrawFormattedText(w,verbage{1},'center',(wRect(4)*.75),COLORS.BLUE);
-        Screen('Flip',w);
-%         PicRating_CC(xy).RatingOnset = rateon - scan_sec;
+    DrawFormattedText(w,'We are going to show you some pictures of food and have you rate how appetizing each food is.\n\n You will use a scale from 1 to 9, where 1 is "Not at all appetizing" and 9 is "Extremely appetizing."\n\nPress any key to continue.','center','center',COLORS.WHITE,50,[],[],1.5);
+    Screen('Flip',w);
+    KbWait([],3);
+    
+    DrawFormattedText(w,'Please use the numbers along the top of the keyboard to select your rating.\n\nPress any key to continue.','center','center',COLORS.WHITE,50,[],[],1.5);
+    Screen('Flip',w);
+    KbWait([],3);
+    
+    %% fMRI synch w/trigger
+    % if fmri == 1;
+    %     DrawFormattedText(w,'Synching with fMRI: Waiting for trigger','center','center',COLORS.WHITE);
+    %     Screen('Flip',w);
+    %
+    %     scan_sec = KbTriggerWait(KEYS.trigger,xkeys);
+    % else
+    %     scan_sec = GetSecs();
+    % end
+    
+    %%
+    DrawFormattedText(w,'The rating task will now begin.\n\nPress any key to continue.','center','center',COLORS.WHITE,50,[],[],1.5);
+    Screen('Flip',w);
+    KbWait([],3);
+    WaitSecs(1);
+    
+    
+    for x = 1:20:length(PicRating_CC);  %UPDATE TO LENGTH OF GO PICS
+        for y = 1:20;
+            xy = x+(y-1);
+            if xy > length(PicRating_CC)
+                break
+            end
             
-        FlushEvents();
+            DrawFormattedText(w,'+','center','center',COLORS.WHITE);
+            Screen('Flip',w);
+            %         PicRating_CC(xy).FixOnset = fixon - scan_sec;
+            %         WaitSecs(PicRating_CC(xy).Jitter);
+            WaitSecs(.25);
+            
+            tp = imread(getfield(PicRating_CC,{xy},'filename'));
+            tpx = Screen('MakeTexture',w,tp);
+            Screen('DrawTexture',w,tpx);
+            %         picon = Screen('Flip',w);
+            %         PicRating_CC(xy).PicOnset = picon - scan_sec;
+            %         WaitSecs(5);
+            
+            %         Screen('DrawTexture',w,tpx);
+            drawRatings();
+            DrawFormattedText(w,verbage{1},'center',(wRect(4)*.75),COLORS.BLUE);
+            Screen('Flip',w);
+            %         PicRating_CC(xy).RatingOnset = rateon - scan_sec;
+            
+            FlushEvents();
             while 1
                 [keyisdown, ~, keycode] = KbCheck();
                 if (keyisdown==1 && any(keycode(KEYS.all)))
-%                     PicRating_CC(xy).RT = rt - rateon;
+                    %                     PicRating_CC(xy).RT = rt - rateon;
                     
                     if iscell(KbName(keycode)) && numel(KbName(keycode))>1  %You have mashed 2 keys; shame on you.
                         rating = KbName(find(keycode,1));
@@ -302,34 +287,34 @@ for x = 1:20:length(PicRating_CC);  %UPDATE TO LENGTH OF GO PICS
                 end
             end
             %Record response here.
-%             if q == 1;
-%             if rating == 0; %Zero key is used for 10. Thus check and correct for when they press 0.
-%                 rating = 10;
-%             end
-           PicRating_CC(xy).Rate_App = rating;
-           Screen('Flip',w);
-           FlushEvents();
-%            WaitSecs(.25);
-
-    end
-    %Take a break every 20 pics.
-    Screen('Flip',w);
-    DrawFormattedText(w,'Press any key when you are ready to continue','center','center',COLORS.WHITE);
-    Screen('Flip',w);
-    KbWait([],3);
-    
-    if xy > length(PicRating_CC)
+            %             if q == 1;
+            %             if rating == 0; %Zero key is used for 10. Thus check and correct for when they press 0.
+            %                 rating = 10;
+            %             end
+            PicRating_CC(xy).Rate_App = rating;
+            Screen('Flip',w);
+            FlushEvents();
+            %            WaitSecs(.25);
+            
+        end
+        %Take a break every 20 pics.
+        Screen('Flip',w);
+        DrawFormattedText(w,'Press any key when you are ready to continue','center','center',COLORS.WHITE);
+        Screen('Flip',w);
+        KbWait([],3);
+        
+        if xy > length(PicRating_CC)
             break
+        end
     end
-end
-
-Screen('Flip',w);
-WaitSecs(.5);
-
-% savedir = [mfilesdir filesep 'Results'];
-% savefilename = sprintf('PicRate_Training_%d.mat',ID);
-
-
+    
+    Screen('Flip',w);
+    WaitSecs(.5);
+    
+    % savedir = [mfilesdir filesep 'Results'];
+    % savefilename = sprintf('PicRate_Training_%d.mat',ID);
+    
+    
 end
 
 %% Sort & Save List of Foods.
@@ -375,84 +360,84 @@ PicRating.U = cell2struct(postsort_U,fields,2);
 
 %%
 if dow == 1;
-%Dat new grid:
-[rects,mids] = DrawRectsGrid(2);
-
-%List of H & U trials;
-value_trials = 40;
-val_trial = [ones(value_trials,1); zeros(value_trials,1)];
-val_pic = [randperm(value_trials)'; randperm(value_trials)'];
-val_trial = [val_trial val_pic];
-val_trial = val_trial(randperm(length(val_trial)),:);
-
-% Top40 Healthy & Unhealthy (low/high)
-% All pics interspersed
-% One big block
-% From $0 - 10 ('<$1 $2 $3....$10+')
-% Instructions to describe the scale.
-DrawFormattedText(w,'Next we would like you to view some of these images again and rate how much each food is worth to you. Using the number keys along the top of the key board, choose 1 if the food is worth $0 to $1 and up to 10 if the food is worth $10 or more. Note that you will press 0 (zero) at the top of the keyboard to choose "10."\n\nThere is no right or wrong answer, just choose what comes to mind first.\n\nPress any key to continue.','center','center',COLORS.WHITE,60,[],[],1.5);
-Screen('Flip',w);
-KbWait([],2);
-
-for vt = 1:length(val_trial);
-    DrawFormattedText(w,'+','center','center',COLORS.WHITE);
-    Screen('Flip',w);
-    WaitSecs(.25);
+    %Dat new grid:
+    [rects,mids] = DrawRectsGrid(2);
     
-    valpicnum = val_trial(vt,2);
+    %List of H & U trials;
+    value_trials = 40;
+    val_trial = [ones(value_trials,1); zeros(value_trials,1)];
+    val_pic = [randperm(value_trials)'; randperm(value_trials)'];
+    val_trial = [val_trial val_pic];
+    val_trial = val_trial(randperm(length(val_trial)),:);
+    
+    % Top40 Healthy & Unhealthy (low/high)
+    % All pics interspersed
+    % One big block
+    % From $0 - 10 ('<$1 $2 $3....$10+')
+    % Instructions to describe the scale.
+    DrawFormattedText(w,'Next we would like you to view some of these images again and rate how much each food is worth to you. Using the number keys along the top of the key board, choose 1 if the food is worth $0 to $1 and up to 10 if the food is worth $10 or more. Note that you will press 0 (zero) at the top of the keyboard to choose "10."\n\nThere is no right or wrong answer, just choose what comes to mind first.\n\nPress any key to continue.','center','center',COLORS.WHITE,60,[],[],1.5);
+    Screen('Flip',w);
+    KbWait([],2);
+    
+    for vt = 1:length(val_trial);
+        DrawFormattedText(w,'+','center','center',COLORS.WHITE);
+        Screen('Flip',w);
+        WaitSecs(.25);
         
-    if val_trial(vt,1) == 1; %If healthy trial       
-        tp = imread(getfield(PicRating.H,{valpicnum},'name'));
-    elseif val_trial(vt,1) == 0; %if Unhealthy trial
-        tp = imread(getfield(PicRating.U,{valpicnum},'name'));
-    end
-    tpx = Screen('MakeTexture',w,tp); 
-    Screen('DrawTexture',w,tpx);
-
+        valpicnum = val_trial(vt,2);
+        
+        if val_trial(vt,1) == 1; %If healthy trial
+            tp = imread(getfield(PicRating.H,{valpicnum},'name'));
+        elseif val_trial(vt,1) == 0; %if Unhealthy trial
+            tp = imread(getfield(PicRating.U,{valpicnum},'name'));
+        end
+        tpx = Screen('MakeTexture',w,tp);
+        Screen('DrawTexture',w,tpx);
+        
         drawValues();
         DrawFormattedText(w,verbage{2},'center',(wRect(4)*.75),COLORS.BLUE);
         Screen('Flip',w);
-
-            
+        
+        
         FlushEvents();
-            while 1
-                [keyisdown, ~, keycode] = KbCheck();
-                if (keyisdown==1 && any(keycode(KEYS.val)))
-%                     PicRating_CC(xy).RT = rt - rateon;
-                    
-                    rating_dos = KbName(find(keycode));
-                    rating_dos = str2double(rating_dos(1));
-                    
-                    Screen('DrawTexture',w,tpx);
-                    drawValues(keycode);
-                    DrawFormattedText(w,verbage{2},'center',(wRect(4)*.75),COLORS.BLUE);
-                    Screen('Flip',w);
-                    WaitSecs(.25);
-                    break;
-                end
-            end
-            %Record response here.
-
-            if rating_dos == 0; %Zero key is used for 10. Thus check and correct for when they press 0.
-                rating_dos = 10;
-            end
-            
-            if val_trial(vt,1) == 1;
-                PicRating.H(valpicnum).value = rating_dos;
-            elseif val_trial(vt,1) == 0;
-                PicRating.U(valpicnum).value = rating_dos;
-            end
+        while 1
+            [keyisdown, ~, keycode] = KbCheck();
+            if (keyisdown==1 && any(keycode(KEYS.val)))
+                %                     PicRating_CC(xy).RT = rt - rateon;
                 
-           Screen('Flip',w);
-           FlushEvents();
-           WaitSecs(.25);
-end
-
+                rating_dos = KbName(find(keycode));
+                rating_dos = str2double(rating_dos(1));
+                
+                Screen('DrawTexture',w,tpx);
+                drawValues(keycode);
+                DrawFormattedText(w,verbage{2},'center',(wRect(4)*.75),COLORS.BLUE);
+                Screen('Flip',w);
+                WaitSecs(.25);
+                break;
+            end
+        end
+        %Record response here.
+        
+        if rating_dos == 0; %Zero key is used for 10. Thus check and correct for when they press 0.
+            rating_dos = 10;
+        end
+        
+        if val_trial(vt,1) == 1;
+            PicRating.H(valpicnum).value = rating_dos;
+        elseif val_trial(vt,1) == 0;
+            PicRating.U(valpicnum).value = rating_dos;
+        end
+        
+        Screen('Flip',w);
+        FlushEvents();
+        WaitSecs(.25);
+    end
+    
 end
 
 %% Save dat data
 try
-save(savefile,'PicRating');
+    save(savefile,'PicRating');
 catch
     warning('Something is amiss with this save. Retrying to save in a more general location (i.e., in same folder as PicRating_CC.m)...\n');
     try
@@ -506,13 +491,13 @@ squart_y = wRect(4)*.8;         %Rects start @~80% down screen.
 rects = zeros(4,num_rects);
 
 % for row = 1:DIMS.grid_row;
-    for col = 1:num_rects;
-%         currr = ((row-1)*DIMS.grid_col)+col;
-        rects(1,col)= squart_x + (col-1)*(square_side+gap);
-        rects(2,col)= squart_y;
-        rects(3,col)= squart_x + (col-1)*(square_side+gap)+square_side;
-        rects(4,col)= squart_y + square_side;
-    end
+for col = 1:num_rects;
+    %         currr = ((row-1)*DIMS.grid_col)+col;
+    rects(1,col)= squart_x + (col-1)*(square_side+gap);
+    rects(2,col)= squart_y;
+    rects(3,col)= squart_x + (col-1)*(square_side+gap)+square_side;
+    rects(4,col)= squart_y + square_side;
+end
 % end
 mids = [rects(1,:)+square_side/2; rects(2,:)+square_side/2+5];
 
@@ -523,7 +508,7 @@ function drawRatings(varargin)
 
 global w KEYS COLORS rects mids
 
-num_rects = 9;  
+num_rects = 9;
 colors=repmat(COLORS.BLUE',1,num_rects);
 % rects=horzcat(allRects.rate1rect',allRects.rate2rect',allRects.rate3rect',allRects.rate4rect');
 
@@ -556,8 +541,8 @@ if nargin >= 1 && ~isempty(varargin{1})
             choice=8;
         case {KEYS.NINE}
             choice=9;
-%         case {KEYS.TEN}
-%             choice = 10;
+            %         case {KEYS.TEN}
+            %             choice = 10;
     end
     
     if exist('choice','var')
@@ -569,8 +554,8 @@ if nargin >= 1 && ~isempty(varargin{1})
 end
 
 
-    window=w;
-   
+window=w;
+
 
 Screen('TextFont', window, 'Arial');
 Screen('TextStyle', window, 1);
@@ -604,7 +589,7 @@ function drawValues(varargin)
 
 global w KEYS COLORS rects mids
 
-num_rects = 10;  
+num_rects = 10;
 colors=repmat(COLORS.BLUE',1,num_rects);
 % rects=horzcat(allRects.rate1rect',allRects.rate2rect',allRects.rate3rect',allRects.rate4rect');
 
@@ -637,7 +622,7 @@ if nargin >= 1 && ~isempty(varargin{1})
             choice=8;
         case {KEYS.NINE}
             choice=9;
-         case {KEYS.TEN}
+        case {KEYS.TEN}
             choice = 10;
     end
     
@@ -650,8 +635,8 @@ if nargin >= 1 && ~isempty(varargin{1})
 end
 
 
-    window=w;
-   
+window=w;
+
 
 Screen('TextFont', window, 'Arial');
 Screen('TextStyle', window, 1);
@@ -691,7 +676,7 @@ end
 function [nx, ny, textbounds] = CenterTextOnPoint(win, tstring, sx, sy,color)
 % [nx, ny, textbounds] = DrawFormattedText(win, tstring [, sx][, sy][, color][, wrapat][, flipHorizontal][, flipVertical][, vSpacing][, righttoleft])
 %
-% 
+%
 
 numlines=1;
 
@@ -723,26 +708,26 @@ xcenter=0;
 
 % No text wrapping by default:
 % if nargin < 6 || isempty(wrapat)
-    wrapat = 0;
+wrapat = 0;
 % end
 
 % No horizontal mirroring by default:
 % if nargin < 7 || isempty(flipHorizontal)
-    flipHorizontal = 0;
+flipHorizontal = 0;
 % end
 
 % No vertical mirroring by default:
 % if nargin < 8 || isempty(flipVertical)
-    flipVertical = 0;
+flipVertical = 0;
 % end
 
 % No vertical mirroring by default:
 % if nargin < 9 || isempty(vSpacing)
-    vSpacing = 1.5;
+vSpacing = 1.5;
 % end
 
 % if nargin < 10 || isempty(righttoleft)
-    righttoleft = 0;
+righttoleft = 0;
 % end
 
 % Convert all conventional linefeeds into C-style newlines:
@@ -751,14 +736,14 @@ newlinepos = strfind(char(tstring), '\n');
 % If '\n' is already encoded as a char(10) as in Octave, then
 % there's no need for replacemet.
 if char(10) == '\n' %#ok<STCMP>
-   newlinepos = [];
+    newlinepos = [];
 end
 
 % Need different encoding for repchar that matches class of input tstring:
 if isa(tstring, 'double')
     repchar = 10;
 elseif isa(tstring, 'uint8')
-    repchar = uint8(10);    
+    repchar = uint8(10);
 else
     repchar = char(10);
 end
@@ -789,21 +774,21 @@ winRect = Screen('Rect', win);
 winHeight = RectHeight(winRect);
 
 % if ischar(sy) && strcmpi(sy, 'center')
-    % Compute vertical centering:
-    
-    % Compute height of text box:
-%     numlines = length(strfind(char(tstring), char(10))) + 1;
-    %bbox = SetRect(0,0,1,numlines * theight);
-    bbox = SetRect(0,0,1,theight);
-    
-    
-    textRect=CenterRectOnPoint(bbox,sx,sy);
-    % Center box in window:
-    [rect,dh,dv] = CenterRect(bbox, textRect);
+% Compute vertical centering:
 
-    % Initialize vertical start position sy with vertical offset of
-    % centered text box:
-    sy = dv;
+% Compute height of text box:
+%     numlines = length(strfind(char(tstring), char(10))) + 1;
+%bbox = SetRect(0,0,1,numlines * theight);
+bbox = SetRect(0,0,1,theight);
+
+
+textRect=CenterRectOnPoint(bbox,sx,sy);
+% Center box in window:
+[rect,dh,dv] = CenterRect(bbox, textRect);
+
+% Initialize vertical start position sy with vertical offset of
+% centered text box:
+sy = dv;
 % end
 
 % Keep current text color if noone provided:
@@ -835,7 +820,7 @@ end
 % % enabled.
 % disableClip = (ptb_drawformattedtext_disableClipping ~= -1) && ...
 %               ((ptb_drawformattedtext_disableClipping > 0) || (nargout >= 3));
-% 
+%
 
 disableClip=1;
 
@@ -852,7 +837,7 @@ while ~isempty(tstring)
         tstring =[];
         dolinefeed = 0;
     end
-
+    
     if IsOSX
         % On OS/X, we enforce a line-break if the unwrapped/unbroken text
         % would exceed 250 characters. The ATSU text renderer of OS/X can't
@@ -878,7 +863,7 @@ while ~isempty(tstring)
     
     % tstring contains the remainder of the input string to process in next
     % iteration, curstring is the string we need to draw now.
-
+    
     % Perform crude clipping against upper and lower window borders for
     % this text snippet. If it is clearly outside the window and would get
     % clipped away by the renderer anyway, we can safe ourselves the
@@ -901,61 +886,61 @@ while ~isempty(tstring)
         curstring = cast(curstring, stringclass);
         
         % Need bounding box?
-%         if xcenter || flipHorizontal || flipVertical
-            % Compute text bounding box for this substring:
-            bbox=Screen('TextBounds', win, curstring, [], [], [], righttoleft);
-%         end
+        %         if xcenter || flipHorizontal || flipVertical
+        % Compute text bounding box for this substring:
+        bbox=Screen('TextBounds', win, curstring, [], [], [], righttoleft);
+        %         end
         
         % Horizontally centered output required?
-%         if xcenter
-            % Yes. Compute dh, dv position offsets to center it in the center of window.
-%             [rect,dh] = CenterRect(bbox, winRect);
-            [rect,dh] = CenterRect(bbox, textRect);
-            % Set drawing cursor to horizontal x offset:
-            xp = dh;
-%         end
-            
-%         if flipHorizontal || flipVertical
-%             textbox = OffsetRect(bbox, xp, yp);
-%             [xc, yc] = RectCenter(textbox);
-% 
-%             % Make a backup copy of the current transformation matrix for later
-%             % use/restoration of default state:
-%             Screen('glPushMatrix', win);
-% 
-%             % Translate origin into the geometric center of text:
-%             Screen('glTranslate', win, xc, yc, 0);
-% 
-%             % Apple a scaling transform which flips the direction of x-Axis,
-%             % thereby mirroring the drawn text horizontally:
-%             if flipVertical
-%                 Screen('glScale', win, 1, -1, 1);
-%             end
-%             
-%             if flipHorizontal
-%                 Screen('glScale', win, -1, 1, 1);
-%             end
-% 
-%             % We need to undo the translations...
-%             Screen('glTranslate', win, -xc, -yc, 0);
-%             [nx ny] = Screen('DrawText', win, curstring, xp, yp, color, [], [], righttoleft);
-%             Screen('glPopMatrix', win);
-%         else
-            [nx ny] = Screen('DrawText', win, curstring, xp, yp, color, [], [], righttoleft);
-%         end
+        %         if xcenter
+        % Yes. Compute dh, dv position offsets to center it in the center of window.
+        %             [rect,dh] = CenterRect(bbox, winRect);
+        [rect,dh] = CenterRect(bbox, textRect);
+        % Set drawing cursor to horizontal x offset:
+        xp = dh;
+        %         end
+        
+        %         if flipHorizontal || flipVertical
+        %             textbox = OffsetRect(bbox, xp, yp);
+        %             [xc, yc] = RectCenter(textbox);
+        %
+        %             % Make a backup copy of the current transformation matrix for later
+        %             % use/restoration of default state:
+        %             Screen('glPushMatrix', win);
+        %
+        %             % Translate origin into the geometric center of text:
+        %             Screen('glTranslate', win, xc, yc, 0);
+        %
+        %             % Apple a scaling transform which flips the direction of x-Axis,
+        %             % thereby mirroring the drawn text horizontally:
+        %             if flipVertical
+        %                 Screen('glScale', win, 1, -1, 1);
+        %             end
+        %
+        %             if flipHorizontal
+        %                 Screen('glScale', win, -1, 1, 1);
+        %             end
+        %
+        %             % We need to undo the translations...
+        %             Screen('glTranslate', win, -xc, -yc, 0);
+        %             [nx ny] = Screen('DrawText', win, curstring, xp, yp, color, [], [], righttoleft);
+        %             Screen('glPopMatrix', win);
+        %         else
+        [nx ny] = Screen('DrawText', win, curstring, xp, yp, color, [], [], righttoleft);
+        %         end
     else
         % This is an empty substring (pure linefeed). Just update cursor
         % position:
         nx = xp;
         ny = yp;
     end
-
+    
     % Update bounding box:
     minx = min([minx , xp, nx]);
     maxx = max([maxx , xp, nx]);
     miny = min([miny , yp, ny]);
     maxy = max([maxy , yp, ny]);
-
+    
     % Linefeed to do?
     if dolinefeed
         % Update text drawing cursor to perform carriage return:
@@ -988,7 +973,7 @@ ny = yp;
 if previouswin > 0
     if previouswin ~= win
         % Different window was active before our invocation:
-
+        
         % Was that window in 3D mode, i.e., OpenGL rendering for that window was active?
         if IsOpenGLRendering
             % Yes. We need to switch that window back into 3D OpenGL mode:
