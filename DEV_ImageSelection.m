@@ -13,23 +13,24 @@ answer=inputdlg(prompt,'Please input subject info',1,defAns);
 ID=str2double(answer{1});
 
 studyDir = '~/Dropbox/Devaluation/';
-imgDir = [studyDir 'Interventions/Images/Devaluation\ Images/Unhealthy/']; 
+imgDir = [studyDir 'Interventions/Images/DevaluationImages/Unhealthy/']; 
 inputDir = [studyDir 'Interventions/ImageSelection/input/'];
+outputDir = [studyDir 'Interventions/ImageSelection/ouput/'];
 
 %%
 %Input categories.
 categoryIdx = dlmread([inputdir filesep 'categories_' ID '.txt'],'\t');
 
-FOODCATS = {'Chocolate';
+FOODCATS = {'Barbeque'
+    'Chocolate';
     'Cookies'
     'Donuts'
+    'FastFood'
+    'Fries'
     'IceCream'
     'NonChocolateCandy'
-    'Fries'
     'Pizza'
-    'FastFood'
     'ProcessedMeats'
-    'Barbeque'
     'SaltySnacks'
     'SoftDrinks'
     'UnhealthyPastas'};
@@ -61,31 +62,24 @@ KEYS.TEN= KbName('0)');
 rangetest = cell2mat(struct2cell(KEYS));
 KEYS.val = min(rangetest):max(rangetest);
 KEYS.all = KEYS.ONE:KEYS.NINE;
-% KEYS.trigger = KbName('''"');
-    
-% fmri = str2double(answer{2});
 
 %% normal code below.
 try
-    cd(imgdir)
+    cd(imgDir)
 catch
     error('Failed to open or find the image directory as: %s.',imgdir);
 end
 
-[mfilesdir,~,~] = fileparts(which('PicRatings_CC.m'));
-% savefile = [imgdir filesep 'Saved_Pic_Ratings' filesep sprintf('PicRating_CC_%d-%d.mat',ID,SESS)];
-%New as of 6/8/17: Files will be saved in subj folder.
-savefile = [subj_imgdir filesep sprintf('PicRating_CC_%d-%d.mat',ID,SESS)];
+outputFile = [subj_imgdir filesep sprintf('PicRating_CC_%d-%d.mat',ID,SESS)];
 
-if exist(savefile,'file') == 2;
+if exist(outputFile,'file') == 2;
     commandwindow;
     warning('THIS FILE ALREADY EXISTS ARE YOU SURE YOU WANT TO CONTINUE?')
-    overright = input('Type 1 to over-write file or 0 to cancel and enter in new info: ');
-    if overright == 0;
+    overwrite = input('Type 1 to over-write file or 0 to cancel and enter in new info: ');
+    if overwrite == 0; 
         error('File already exists. Please double-check and/or re-enter participant number and session information.');
     end
 end
-
    
     %Figure out which Healthy photos to use...
     for hhh = 1:length(pic_cats_H);
