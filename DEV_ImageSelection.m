@@ -110,8 +110,8 @@ numPics = size(subPics,1);
 rng('default')
 rng('shuffle')
 perm = randperm(numPics);
-subPics_shuffled = subPics(perm)
-subPicsArray = struct2cell(subPics_shuffled)'
+subPics_shuffled = subPics(perm);
+subPicsArray = struct2cell(subPics_shuffled)';
 arrayToSave = subPicsArray(:,1);
 save([outputDir filesep 'imagePrezOrder_DEV' num2str(ID)],'arrayToSave')
 
@@ -123,11 +123,11 @@ for i = 1:size(disjointedPathArray,1)
 end
 
 % ImgRatings used to be called PicRatings_CC
-ImgRatings = struct('Rate_App',0,'filename',arrayToSave); % add CAT & TIER here!
+ImgRatings = struct('Rate_App',0,'Tier',0,'filename',arrayToSave); % make TIER actual work here
 
 cd(studyDir)
 if test==1
-    save ImgRatings
+    save ImgRatings 
 end
 
 % commandwindow;
