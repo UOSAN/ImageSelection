@@ -59,11 +59,11 @@ KEYS.ONE= KbName('1!');
 KEYS.TWO= KbName('2@');
 KEYS.THREE= KbName('3#');
 KEYS.FOUR= KbName('4$');
-KEYS.FIVE= KbName('5%');
-KEYS.SIX= KbName('6^');
-KEYS.SEVEN= KbName('7&');
-KEYS.EIGHT= KbName('8*');
-KEYS.NINE= KbName('9(');
+% KEYS.FIVE= KbName('5%');
+% KEYS.SIX= KbName('6^');
+% KEYS.SEVEN= KbName('7&');
+% KEYS.EIGHT= KbName('8*');
+% KEYS.NINE= KbName('9(');
 KEYS.TEN= KbName('0)');
 rangetest = cell2mat(struct2cell(KEYS));
 KEYS.val = min(rangetest):max(rangetest);
@@ -114,15 +114,15 @@ subPics_shuffled = subPics(perm)
 subPicsArray = struct2cell(subPics_shuffled)'
 save([outputDir filesep 'imagePrezOrder_' ID],subPicsArray(:,1))
 
+% Make an array of pathnames. Not sure if it'll be needed.
 disjointedPathArray = [subPicsArray(:,2) subPicsArray(:,1)]
-
 pathArray = {};
 for i = 1:size(disjointedPathArray,1)
     pathArray{i,1} = [disjointedPathArray{i,1} filesep disjointedPathArray{i,2}];
 end
 
 % ImgRatings used to be called PicRatings_CC
-ImgRatings = struct('filename',picnames(:,1),'PicType',picnames(:,2),'Rate_App',0);
+ImgRatings = struct('filename',picnames(:,1),'PicType',picnames(:,2),'Rate_App',0); % add TIER here!
 
 commandwindow;
 
