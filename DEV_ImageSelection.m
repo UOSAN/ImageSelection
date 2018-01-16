@@ -19,7 +19,7 @@ elseif test == 1
     studyDir = '~/Desktop/ImageSelection/';
 end
 
-imgDir = [studyDir filesep 'Interventions/Images/DevaluationImages/Unhealthy/'];
+imgDir = [studyDir filesep 'Stimuli/CategorizedImages/Unhealthy/'];
 inputDir = [studyDir filesep 'input/'];
 outputDir = [studyDir filesep 'output/'];
 
@@ -97,7 +97,7 @@ for ccc = 1:length(subCats);
     catch
         error('Tried to open the folder for %s category but failed. Ensure it is saved as %s',catFolder,catFolder)
     end
-    catPics = dir('*.png');
+    catPics = dir('*.jpg');
     if exist('subPics')==1
         subPics = [subPics; catPics];
     else subPics = catPics;
@@ -126,7 +126,7 @@ end
 ImgRatings = struct('Rate_App',0,'filename',arrayToSave); % add CAT & TIER here!
 
 cd(studyDir)
-if test=1
+if test==1
     save ImgRatings
 end
 
