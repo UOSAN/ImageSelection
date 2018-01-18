@@ -65,9 +65,7 @@ KEYS.SEVEN= KbName('7&');
 KEYS.EIGHT= KbName('8*');
 KEYS.NINE= KbName('9(');
 KEYS.TEN= KbName('0)');
-rangetest = cell2mat(struct2cell(KEYS));
-KEYS.val = min(rangetest):max(rangetest);
-KEYS.all = KEYS.ONE:KEYS.TEN;
+KEYS.all = [KEYS.ONE:KEYS.FOUR KEYS.TEN]; % 1-4 and 0
 
 try
     cd(imgDir)
@@ -431,7 +429,7 @@ oldSize = Screen('TextSize',window,35);
 % Screen('TextStyle', w2, 1)
 % Screen('TextSize',w2,60);
 
-rectsToDraw = [1:maxRating num_rects]
+rectsToDraw = [1:maxRating num_rects];
 
 %draw all the squares
 Screen('FrameRect',window,colors(:,rectsToDraw),rects(:,rectsToDraw),1);
