@@ -22,6 +22,7 @@ end
 imgDir = [studyDir filesep 'Stimuli/CategorizedImages/Unhealthy/'];
 inputDir = [studyDir filesep 'input/'];
 outputDir = [studyDir filesep 'output/'];
+% add path
 
 %%
 %Input categories.
@@ -43,6 +44,7 @@ FOODCATS = {'Barbeque'
 
 COLORS = struct;
 COLORS.BLACK = [0 0 0];
+COLORS.GREY = [120 120 120];
 COLORS.WHITE = [255 255 255];
 COLORS.RED = [255 0 0];
 COLORS.BLUE = [130 130 255];
@@ -53,8 +55,6 @@ COLORS.rect = COLORS.GREEN;
 KbName('UnifyKeyNames');
 
 KEYS = struct;
-% KEYS.LEFT=KbName('leftarrow');
-% KEYS.RIGHT=KbName('rightarrow');
 KEYS.ONE= KbName('1!');
 KEYS.TWO= KbName('2@');
 KEYS.THREE= KbName('3#');
@@ -127,7 +127,7 @@ ImgRatings = struct('Rate_App',0,'Tier',0,'filename',arrayToSave); % make TIER a
 
 cd(studyDir)
 if test==1
-    save ImgRatings 
+    save ImgRatings
 end
 
 commandwindow;
@@ -175,25 +175,19 @@ Screen('TextFont', w, 'Arial');
 Screen('TextSize',w,35);
 
 %% Dat Grid
-[rects,mids] = DrawRectsGrid(1);
+[rects,mids] = DrawRectsGrid();
 verbage = 'How appetizing is this food?';
 
 %% Intro
-DrawFormattedText(w,'We are going to show you some pictures of food and have you rate how appetizing each food is.\n\n You will use a scale from 1 to 4, where 1 is "Not at all appetizing" and 4 is "Extremely appetizing."\nIf you have a strong negative reaction to the food, press 0."\n\nPress any key to continue.','center','center',COLORS.WHITE,50,[],[],1.5);
+DrawFormattedText(w,'We are going to show you some pictures of food and have you rate how appetizing each food is.\n\n You will use a scale from 1 to 4, where 1 is "Not at all appetizing" and 4 is "Extremely appetizing."\n\nIf you have a strong negative reaction to the food, press 0.\n\n\n\nPress any key to continue.','center','center',COLORS.WHITE,70,[],[],1.5);
 Screen('Flip',w);
 KbWait([],3);
 
-DrawFormattedText(w,'Please use the numbers along the top of the keyboard to select your rating.\n\nPress any key to continue.','center','center',COLORS.WHITE,50,[],[],1.5);
+DrawFormattedText(w,'Please use the numbers along the top of the keyboard to select your rating.\nThe rating task will now begin.\n\n\n\nPress any key to continue.','center','center',COLORS.WHITE,50,[],[],1.5);
 Screen('Flip',w);
 KbWait([],3);
 
-DrawFormattedText(w,'The rating task will now begin.\n\nPress any key to continue.','center','center',COLORS.WHITE,50,[],[],1.5);
-Screen('Flip',w);
-KbWait([],3);
-WaitSecs(1);
-
-
-for x = 1:20:length(ImgRatings);  %UPDATE TO LENGTH OF GO PICS
+for x = 1:20:length(ImgRatings);
     for y = 1:20;
         xy = x+(y-1);
         if xy > length(ImgRatings)
@@ -215,7 +209,7 @@ for x = 1:20:length(ImgRatings);  %UPDATE TO LENGTH OF GO PICS
         
         %         Screen('DrawTexture',w,tpx);
         drawRatings();
-        DrawFormattedText(w,verbage,'center',(wRect(4)*.75),COLORS.BLUE);
+        DrawFormattedText(w,verbage,'center',(wRect(4)*.75),COLORS.GREY);
         Screen('Flip',w);
         %         PicRating_CC(xy).RatingOnset = rateon - scan_sec;
         
@@ -248,7 +242,7 @@ for x = 1:20:length(ImgRatings);  %UPDATE TO LENGTH OF GO PICS
                 end
                 Screen('DrawTexture',w,tpx);
                 drawRatings(keycode);
-                DrawFormattedText(w,verbage,'center',(wRect(4)*.75),COLORS.BLUE);
+                DrawFormattedText(w,verbage,'center',(wRect(4)*.75),COLORS.GREY);
                 Screen('Flip',w);
                 WaitSecs(.25);
                 break;
@@ -282,43 +276,43 @@ WaitSecs(.5);
 % savedir = [mfilesdir filesep 'Results'];
 % savefilename = sprintf('PicRate_Training_%d.mat',ID);
 
-% 
+%
 % %% Sort & Save List of Foods.
 % %Sort by top appetizing ratings for each set.
 % fields = {'name' 'pictype' 'rating' 'chosen' 'value'}; %'jitter' 'FixOnset' 'PicOnset' 'RatingOnset' 'RT'};
 % presort = struct2cell(PicRating_CC)';
 % pre_H = presort(([presort{:,2}]==1),:);
 % pre_U = presort(([presort{:,2}]==0),:);
-% 
+%
 % postsort_H = sortrows(pre_H,-3);    %Sort descending by column 3
 % postsort_U = sortrows(pre_U,-3);
-% 
+%
 % %Edits from 5/22/17:
 % %Have the "chosenfew_H" matrix expand out to length of lists of
 % %Healhty/Unhealthy photos.
 % %Also: Using top 80 files, not random 60 out of top 80.
-% 
+%
 % %%Need rando 60 out of 80 demarcated for tasks.
 % %%chosenfew = [ones(60,1); zeros(20,1)];
 % chosenfew = ones(80,1);
-% 
+%
 % addzeros_H = length(postsort_H) - length(chosenfew);
 % addzeros_U = length(postsort_U) - length(chosenfew);
-% 
+%
 % % chosenfew_H = [chosenfew(randperm(length(chosenfew)),:); zeros(addzeros_H,1)];
 % % chosenfew_U = [chosenfew(randperm(length(chosenfew)),:); zeros(addzeros_U,1)];
 % chosenfew_H = [chosenfew; zeros(addzeros_H,1)];
 % chosenfew_U = [chosenfew; zeros(addzeros_U,1)];
-% 
-% 
+%
+%
 % %Pair with sorted ratings.
 % postsort_H = [postsort_H num2cell(chosenfew_H) cell(length(postsort_H),1)];
 % postsort_U = [postsort_U num2cell(chosenfew_U) cell(length(postsort_U),1)];
-% 
+%
 % %Turn back into structure
 % PicRating.H = cell2struct(postsort_H,fields,2);
 % PicRating.U = cell2struct(postsort_U,fields,2);
-% 
+%
 % %% Save dat data
 % try
 %     save(savefile,'PicRating');
@@ -335,23 +329,23 @@ WaitSecs(.5);
 %         save(savefilename,'PicRating')
 %     end
 % end
-% 
+%
 % %Save to .csv too.
 % PicRating_table = struct2table([PicRating.H; PicRating.U]);
 % savefilename_csv = [subj_imgdir filesep sprintf('PicRating_CC_%d-%d.csv',ID,SESS)];
 % writetable(PicRating_table,savefilename_csv);
-% 
-% 
+%
+%
 % DrawFormattedText(w,'That concludes this task. The assessor will be with you shortly.','center','center',COLORS.WHITE);
 % Screen('Flip',w);
 % WaitSecs(5);
-% 
+%
 % sca
-% 
+%
 end
- 
+
 %%
-function [ rects,mids ] = DrawRectsGrid(appRval)
+function [ rects,mids ] = DrawRectsGrid()
 %DrawRectGrid:  Builds a grid of squares with gaps in between.
 
 global wRect XCENTER
@@ -359,14 +353,12 @@ global wRect XCENTER
 %Size of image will depend on screen size. First, an area approximately 80%
 %of screen is determined. Then, images are 1/4th the side of that square
 %(minus the 3 x the gap between images.
-if appRval == 1;
-    num_rects = 9;                 %How many rects?
-elseif appRval == 2;
-    num_rects = 10;
-end
+
+num_rects = 7;                 %How many rects?
+% Really there are 5 (1,2,3,4,0) but we want 2 phantom rects between 4 and 0
 
 xlen = wRect(3)*.9;           %Make area covering about 90% of vertical dimension of screen.
-gap = 10;                       %Gap size between each rect
+gap = 20;                       %Gap size between each rect
 square_side = fix((xlen - (num_rects-1)*gap)/num_rects); %Size of rect depends on size of screen.
 
 squart_x = XCENTER-(xlen/2);
@@ -392,8 +384,11 @@ function drawRatings(varargin)
 
 global w KEYS COLORS rects mids
 
-num_rects = 9;
-colors=repmat(COLORS.BLUE',1,num_rects);
+maxRating = 4;
+num_rects = 7;
+% Really there are 5 (1,2,3,4,0) but we want 2 phantom rects between 4 and 0
+
+colors=repmat(COLORS.GREY',1,num_rects);
 % rects=horzcat(allRects.rate1rect',allRects.rate2rect',allRects.rate3rect',allRects.rate4rect');
 
 %Needs to feed in "code" from KbCheck, to show which key was chosen.
@@ -415,106 +410,12 @@ if nargin >= 1 && ~isempty(varargin{1})
             choice=3;
         case {KEYS.FOUR}
             choice=4;
-        case {KEYS.FIVE}
-            choice=5;
-        case {KEYS.SIX}
-            choice=6;
-        case {KEYS.SEVEN}
-            choice=7;
-        case {KEYS.EIGHT}
-            choice=8;
-        case {KEYS.NINE}
-            choice=9;
-            %         case {KEYS.TEN}
-            %             choice = 10;
-    end
-    
-    if exist('choice','var')
-        
-        
-        colors(:,choice)=COLORS.GREEN';
-        
-    end
-end
-
-
-window=w;
-
-
-Screen('TextFont', window, 'Arial');
-Screen('TextStyle', window, 1);
-oldSize = Screen('TextSize',window,35);
-
-% Screen('TextFont', w2, 'Arial');
-% Screen('TextStyle', w2, 1)
-% Screen('TextSize',w2,60);
-
-
-
-%draw all the squares
-Screen('FrameRect',window,colors,rects,1);
-
-
-% Screen('FrameRect',w2,colors,rects,1);
-
-
-%draw the text (1-10)
-for n = 1:num_rects;
-    numnum = sprintf('%d',n);
-    CenterTextOnPoint(window,numnum,mids(1,n),mids(2,n),COLORS.BLUE);
-end
-
-
-Screen('TextSize',window,oldSize);
-
-end
-
-function drawValues(varargin)
-
-global w KEYS COLORS rects mids
-
-num_rects = 10;
-colors=repmat(COLORS.BLUE',1,num_rects);
-% rects=horzcat(allRects.rate1rect',allRects.rate2rect',allRects.rate3rect',allRects.rate4rect');
-
-%Needs to feed in "code" from KbCheck, to show which key was chosen.
-if nargin >= 1 && ~isempty(varargin{1})
-    response=varargin{1};
-    
-    key=find(response);
-    if length(key)>1
-        key=key(1);
-    end;
-    
-    switch key
-        
-        case {KEYS.ONE}
-            choice=1;
-        case {KEYS.TWO}
-            choice=2;
-        case {KEYS.THREE}
-            choice=3;
-        case {KEYS.FOUR}
-            choice=4;
-        case {KEYS.FIVE}
-            choice=5;
-        case {KEYS.SIX}
-            choice=6;
-        case {KEYS.SEVEN}
-            choice=7;
-        case {KEYS.EIGHT}
-            choice=8;
-        case {KEYS.NINE}
-            choice=9;
         case {KEYS.TEN}
-            choice = 10;
+            choice=7;
     end
     
     if exist('choice','var')
-        
-        
         colors(:,choice)=COLORS.GREEN';
-        
     end
 end
 
@@ -530,27 +431,24 @@ oldSize = Screen('TextSize',window,35);
 % Screen('TextStyle', w2, 1)
 % Screen('TextSize',w2,60);
 
-
+rectsToDraw = [1:maxRating num_rects]
 
 %draw all the squares
-Screen('FrameRect',window,colors,rects,1);
+Screen('FrameRect',window,colors(:,rectsToDraw),rects(:,rectsToDraw),1);
 
-
-% Screen('FrameRect',w2,colors,rects,1);
-
-
-%draw the text (1-10)
+%draw the text (1-4 and 0)
 for n = 1:num_rects;
     if n == 1;
-        numnum = sprintf('<$%d',n);
-    elseif n == 10;
-        numnum = sprintf('$%d+',n);
+        numnum = sprintf('%d',n);
+    elseif n == num_rects
+        numnum = sprintf('%d',0);
     else
-        numnum = sprintf('$%d',n);
+        numnum = sprintf('%d',n);
     end
-    CenterTextOnPoint(window,numnum,mids(1,n),mids(2,n),COLORS.BLUE);
+    if n <= maxRating || n == num_rects
+        CenterTextOnPoint(window,numnum,mids(1,n),mids(2,n),COLORS.GREY);
+    end
 end
-
 
 Screen('TextSize',window,oldSize);
 
