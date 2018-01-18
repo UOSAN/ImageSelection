@@ -1,6 +1,6 @@
 function DEV_ImageSelection()
-% Rate all images in 3 person-specific categories
-% Output file including all pic names, ratings, categories, and tiers (1,2,3)
+% Rate all images in 3 person-specific craved categories + 1 not craved 
+% Create output file (csv + mat) including all ratings, tiers (0,1,2,3) and pic names
 
 global wRect w XCENTER rects mids COLORS KEYS ImgRatings inputDir
 
