@@ -14,7 +14,7 @@ answer=inputdlg(prompt,'Please input subject info',1,defAns);
 ID=str2double(answer{1});
 
 if test == 0
-    studyDir = '~/Dropbox/Devaluation/';
+    studyDir = '/Users/Shared/Dropbox/Devaluation/ImageSelection';
 elseif test == 1
     studyDir = '~/Desktop/ImageSelection/';
 end
@@ -181,7 +181,7 @@ DrawFormattedText(w,'We are going to show you some pictures of food and have you
 Screen('Flip',w);
 KbWait([],3);
 
-DrawFormattedText(w,'Please use the numbers along the top of the keyboard to select your rating.\nThe rating task will now begin.\n\n\n\nPress any key to continue.','center','center',COLORS.WHITE,50,[],[],1.5);
+DrawFormattedText(w,'Please use the numbers along the top of the keyboard to select your rating.\n\nThe rating task will now begin.\n\n\n\nPress any key to continue.','center','center',COLORS.WHITE,70,[],[],1.5);
 Screen('Flip',w);
 KbWait([],3);
 
