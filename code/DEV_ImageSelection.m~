@@ -21,7 +21,7 @@ end
 
 imgDir = [studyDir filesep 'Stimuli/CategorizedImages/Unhealthy/'];
 inputDir = [studyDir filesep 'input/'];
-outputDir = [studyDir filesep 'output/Categorized/'];
+outputDir = [studyDir filesep 'output/'];
 
 addpath(genpath([studyDir filesep 'Stimuli']))
 
@@ -116,6 +116,11 @@ save([outputDir filesep 'imagePrezOrder_DEV' num2str(ID)],'picnames_shuf')
 % ImgRatings used to be called PicRatings_CC
 ImgRatings = struct('Rate_App',0,'Tier',catcodes_shuf,'Filename',picnames_shuf); % make TIER actual work here
 
+cd(studyDir)
+if test==1
+    save ImgRatings ImgRatings
+end
+
 commandwindow;
 
 %%
@@ -184,7 +189,7 @@ for x = 1:20:length(ImgRatings);
         Screen('Flip',w);
         WaitSecs(.25);
         
-        tp = imread(getfield(ImgRatings,{xy},'Filename'));
+        tp = imread(getfield(ImgRatings,{xy},'filename'));
         tpx = Screen('MakeTexture',w,tp);
         Screen('DrawTexture',w,tpx);
         drawRatings();
@@ -246,10 +251,12 @@ end
 Screen('Flip',w);
 WaitSecs(.5);
 
-%% Sort & Save List of Foods.
-%Sort by top appetizing ratings for each set.
+save ImgRatings ImgRatings
 
 savefilename = sprintf('DEV%d_ratings',ID); %can use for csv or mat
+
+%% Sort & Save List of Foods.
+%Sort by top appetizing ratings for each set.
 
 fields = {'Rate_App' 'Tier' 'Filename'};
 
@@ -259,24 +266,28 @@ postsort = sortrows(presort,-1);    %Sort descending by column 3
 %Turn back into structure
 ImgRatings_sorted = cell2struct(postsort,fields,2);
 
-%% Save dat data
-try
-    save([outputDir filesep savefilename '.mat'],'ImgRatings_sorted');
-catch
-    warning('Something is amiss with this save. Retrying to save in a more general location (i.e., in same folder as Dev_ImageSelection.m)...\n');
-    try
-        save([imgDir filesep savefilename '.mat'],'ImgRatings_sorted');
-        warning('Save location:  %s\n',[imgDir filesep savefilename '.mat']);
-    catch
-        warning('STILL problems saving....Look for "ImgRatings_sorted.mat" somewhere on the computer and rename it DEV%d_ratings.mat\n',ID);
-        warning('File might be found in: %s\n',pwd);
-        save([savefilename '.mat'],'ImgRatings_sorted')
-    end
-end
+% %% Save dat data
+% try
+%     save(savefile,'PicRating');
+% catch
+%     warning('Something is amiss with this save. Retrying to save in a more general location (i.e., in same folder as PicRating_CC.m)...\n');
+%     try
+%         savefilename = sprintf('PicRating_CC_%d-%d.mat',ID,SESS);
+%         save([imgdir filesep savefilename],'PicRating');
+%         warning('Save location:  %s\n',[mfilesdir filesep savefilename]);
+%     catch
+%         warning('STILL problems saving....Look for "PicRating.mat" somewhere on the computer and rename it PicRating_CC_%d_%d.mat\n',ID,SESS);
+%         warning('File might be found in: %s\n',pwd);
+%         savefilename = sprintf('PicRating_CC_%d-%d.mat',ID,SESS);
+%         save(savefilename,'PicRating')
+%     end
+% end
+%
+% %Save to .csv too.
+% PicRating_table = struct2table([PicRating.H; PicRating.U]);
+% savefilename_csv = [subj_imgdir filesep sprintf('PicRating_CC_%d-%d.csv',ID,SESS)];
+% writetable(PicRating_table,savefilename_csv);
 
-%Save to .csv too.
-ImgRatings_table = struct2table(ImgRatings_sorted);
-writetable(ImgRatings_table,[outputDir filesep savefilename '.csv'],'WriteVariableNames',false);
 
 DrawFormattedText(w,'That concludes this task. The assessor will be with you shortly.','center','center',COLORS.WHITE);
 Screen('Flip',w);
