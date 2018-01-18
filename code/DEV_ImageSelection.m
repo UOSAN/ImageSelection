@@ -23,6 +23,8 @@ imgDir = [studyDir filesep 'Stimuli/CategorizedImages/Unhealthy/'];
 inputDir = [studyDir filesep 'input/'];
 outputDir = [studyDir filesep 'output/'];
 
+addpath(genpath([studyDir filesep 'Stimuli']))
+
 convertRedCap2input(ID);
 % add path
 
@@ -185,29 +187,20 @@ for x = 1:20:length(ImgRatings);
         
         DrawFormattedText(w,'+','center','center',COLORS.WHITE);
         Screen('Flip',w);
-        %         PicRating_CC(xy).FixOnset = fixon - scan_sec;
-        %         WaitSecs(PicRating_CC(xy).Jitter);
         WaitSecs(.25);
         
         tp = imread(getfield(ImgRatings,{xy},'filename'));
         tpx = Screen('MakeTexture',w,tp);
         Screen('DrawTexture',w,tpx);
-        %         picon = Screen('Flip',w);
-        %         PicRating_CC(xy).PicOnset = picon - scan_sec;
-        %         WaitSecs(5);
-        
-        %         Screen('DrawTexture',w,tpx);
         drawRatings();
         DrawFormattedText(w,verbage,'center',(wRect(4)*.15),COLORS.GREY);
         Screen('Flip',w);
-        %         PicRating_CC(xy).RatingOnset = rateon - scan_sec;
         
         FlushEvents();
         while 1
             [keyisdown, ~, keycode] = KbCheck();
             if (keyisdown==1 && any(keycode(KEYS.all)))
-                %                     PicRating_CC(xy).RT = rt - rateon;
-                
+                                
                 if iscell(KbName(keycode)) && numel(KbName(keycode))>1  %You have mashed 2 keys; shame on you.
                     rating = KbName(find(keycode,1));
                     rating = str2double(rating(1));
@@ -238,10 +231,6 @@ for x = 1:20:length(ImgRatings);
             end
         end
         %Record response here.
-        %             if q == 1;
-        %             if rating == 0; %Zero key is used for 10. Thus check and correct for when they press 0.
-        %                 rating = 10;
-        %             end
         ImgRatings(xy).Rate_App = rating;
         Screen('Flip',w);
         FlushEvents();
@@ -262,10 +251,8 @@ end
 Screen('Flip',w);
 WaitSecs(.5);
 
-% savedir = [mfilesdir filesep 'Results'];
-% savefilename = sprintf('PicRate_Training_%d.mat',ID);
+savefilename = sprintf('DEV%d_ratings',ID); %can use for csv or mat
 
-%
 % %% Sort & Save List of Foods.
 % %Sort by top appetizing ratings for each set.
 % fields = {'name' 'pictype' 'rating' 'chosen' 'value'}; %'jitter' 'FixOnset' 'PicOnset' 'RatingOnset' 'RT'};
@@ -323,14 +310,14 @@ WaitSecs(.5);
 % PicRating_table = struct2table([PicRating.H; PicRating.U]);
 % savefilename_csv = [subj_imgdir filesep sprintf('PicRating_CC_%d-%d.csv',ID,SESS)];
 % writetable(PicRating_table,savefilename_csv);
-%
-%
-% DrawFormattedText(w,'That concludes this task. The assessor will be with you shortly.','center','center',COLORS.WHITE);
-% Screen('Flip',w);
-% WaitSecs(5);
-%
-% sca
-%
+
+
+DrawFormattedText(w,'That concludes this task. The assessor will be with you shortly.','center','center',COLORS.WHITE);
+Screen('Flip',w);
+WaitSecs(5);
+
+sca
+
 end
 
 %%
