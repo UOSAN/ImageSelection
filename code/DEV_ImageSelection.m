@@ -2,7 +2,7 @@ function DEV_ImageSelection()
 % Rate all images in 3 person-specific categories
 % Output file including all pic names, ratings, categories, and tiers (1,2,3)
 
-global wRect w XCENTER rects mids COLORS KEYS ImgRatings
+global wRect w XCENTER rects mids COLORS KEYS ImgRatings inputDir
 
 test = input('Is this a test? (0=no, 1=yes): ');
 
@@ -22,25 +22,16 @@ end
 imgDir = [studyDir filesep 'Stimuli/CategorizedImages/Unhealthy/'];
 inputDir = [studyDir filesep 'input/'];
 outputDir = [studyDir filesep 'output/'];
+
+convertRedCap2input(ID);
 % add path
 
 %%
 %Input categories.
 subCats = dlmread([inputDir filesep 'categories_DEV' num2str(ID) '.txt'],'\t');
 
-FOODCATS = {'Barbeque'
-    'Chocolate';
-    'Cookies'
-    'Donuts'
-    'FastFood'
-    'Fries'
-    'IceCream'
-    'NonChocolateCandy'
-    'Pizza'
-    'ProcessedMeats'
-    'SaltySnacks'
-    'SoftDrinks'
-    'UnhealthyPastas'};
+catTable = readtable([inputDir filesep 'categories_masterList.txt'],'ReadVariableNames',false);
+FOODCATS = table2array(catTable);
 
 COLORS = struct;
 COLORS.BLACK = [0 0 0];
@@ -343,6 +334,51 @@ WaitSecs(.5);
 end
 
 %%
+function [] = convertRedCap2input(currentSub)
+
+global inputDir
+
+%Find most recent redcap LABELS file
+redcapFiles = dir([inputDir filesep 'Devaluation_DATA_LABELS*']);
+[~,idx] = sort([redcapFiles.datenum]);
+currentRedcapFile = redcapFiles(idx(end)).name;
+
+redcapTable=readtable([inputDir filesep currentRedcapFile]);
+
+subRows = redcapTable.RecordID==currentSub;
+sessionRows = strcmp(redcapTable.EventName,'Session 0');
+catRow = subRows & sessionRows;
+
+if ~(sum(catRow)==1)
+    error('More than one Session 0 entry for sub %d in the RedCap raw file',currentSub)
+else
+   food0 = redcapTable{catRow,'FoodCategory_LeastCravedFood'}{1};
+   food1 = redcapTable{catRow,'FoodCategoryRank_1'}{1};
+   food2 = redcapTable{catRow,'FoodCategoryRank_2'}{1};
+   food3 = redcapTable{catRow,'FoodCategoryRank_3'}{1};
+end
+
+cd(inputDir)
+catTable = readtable('categories_masterList.txt','ReadVariableNames',false);
+
+vars = {'food0','food1','food2','food3'};
+idxList = zeros(4,1);
+for v = 1:length(vars)
+    % Get rid of spaces in food strings ("despacify")
+    currentVar = vars{v};
+    despacifyStr = [currentVar ' = ' currentVar '(~isspace(' currentVar '));'];
+    eval(despacifyStr)
+    
+    % Find & save index of each cat
+    saveIdxStr = ['idxList(v) = find(strcmp(catTable.Var1,' currentVar '));'];
+    eval(saveIdxStr)
+end
+
+dlmwrite(['categories_DEV' num2str(currentSub) '.txt'],idxList,'delimiter','\t')
+
+end
+
+%%
 function [ rects,mids ] = DrawRectsGrid()
 %DrawRectGrid:  Builds a grid of squares with gaps in between.
 
@@ -451,6 +487,7 @@ Screen('TextSize',window,oldSize);
 end
 
 %%
+
 function [nx, ny, textbounds] = CenterTextOnPoint(win, tstring, sx, sy,color)
 % [nx, ny, textbounds] = DrawFormattedText(win, tstring [, sx][, sy][, color][, wrapat][, flipHorizontal][, flipVertical][, vSpacing][, righttoleft])
 %
