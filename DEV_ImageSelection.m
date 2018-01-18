@@ -44,7 +44,7 @@ FOODCATS = {'Barbeque'
 
 COLORS = struct;
 COLORS.BLACK = [0 0 0];
-COLORS.GREY = [120 120 120];
+COLORS.GREY = [150 150 150];
 COLORS.WHITE = [255 255 255];
 COLORS.RED = [255 0 0];
 COLORS.BLUE = [130 130 255];
@@ -67,7 +67,7 @@ KEYS.NINE= KbName('9(');
 KEYS.TEN= KbName('0)');
 rangetest = cell2mat(struct2cell(KEYS));
 KEYS.val = min(rangetest):max(rangetest);
-KEYS.all = KEYS.ONE:KEYS.NINE;
+KEYS.all = KEYS.ONE:KEYS.TEN;
 
 try
     cd(imgDir)
@@ -209,7 +209,7 @@ for x = 1:20:length(ImgRatings);
         
         %         Screen('DrawTexture',w,tpx);
         drawRatings();
-        DrawFormattedText(w,verbage,'center',(wRect(4)*.75),COLORS.GREY);
+        DrawFormattedText(w,verbage,'center',(wRect(4)*.15),COLORS.GREY);
         Screen('Flip',w);
         %         PicRating_CC(xy).RatingOnset = rateon - scan_sec;
         
@@ -242,7 +242,7 @@ for x = 1:20:length(ImgRatings);
                 end
                 Screen('DrawTexture',w,tpx);
                 drawRatings(keycode);
-                DrawFormattedText(w,verbage,'center',(wRect(4)*.75),COLORS.GREY);
+                DrawFormattedText(w,verbage,'center',(wRect(4)*.15),COLORS.GREY);
                 Screen('Flip',w);
                 WaitSecs(.25);
                 break;
@@ -354,8 +354,8 @@ global wRect XCENTER
 %of screen is determined. Then, images are 1/4th the side of that square
 %(minus the 3 x the gap between images.
 
-num_rects = 7;                 %How many rects?
-% Really there are 5 (1,2,3,4,0) but we want 2 phantom rects between 4 and 0
+num_rects = 8;                 %How many rects?
+% Really there are 5 (1,2,3,4,0) but we want 3 phantom rects between 4 and 0
 
 xlen = wRect(3)*.9;           %Make area covering about 90% of vertical dimension of screen.
 gap = 20;                       %Gap size between each rect
@@ -385,7 +385,7 @@ function drawRatings(varargin)
 global w KEYS COLORS rects mids
 
 maxRating = 4;
-num_rects = 7;
+num_rects = 8;
 % Really there are 5 (1,2,3,4,0) but we want 2 phantom rects between 4 and 0
 
 colors=repmat(COLORS.GREY',1,num_rects);
@@ -411,7 +411,7 @@ if nargin >= 1 && ~isempty(varargin{1})
         case {KEYS.FOUR}
             choice=4;
         case {KEYS.TEN}
-            choice=7;
+            choice=num_rects;
     end
     
     if exist('choice','var')
@@ -438,9 +438,7 @@ Screen('FrameRect',window,colors(:,rectsToDraw),rects(:,rectsToDraw),1);
 
 %draw the text (1-4 and 0)
 for n = 1:num_rects;
-    if n == 1;
-        numnum = sprintf('%d',n);
-    elseif n == num_rects
+    if n == num_rects
         numnum = sprintf('%d',0);
     else
         numnum = sprintf('%d',n);
