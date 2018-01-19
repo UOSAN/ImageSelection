@@ -1,10 +1,16 @@
 function DEV_ImageSelection()
-% Rate all images in 3 person-specific categories
-% Output file including all pic names, ratings, categories, and tiers (1,2,3)
+% Rate all images in 3 person-specific craved categories + 1 not craved 
+% Create output file (csv + mat) including all ratings, tiers (0,1,2,3) and pic names
 
 global wRect w XCENTER rects mids COLORS KEYS ImgRatings inputDir
 
-test = input('Is this a test? (0=no, 1=yes): ');
+dropbox = input('Is dropbox on your computer? (0=no, 1=yes): ');
+if dropbox == 0
+    desktop = input('Is the study dir on your Desktop? (0=no, 1=yes): ');
+    if desktop == 0
+        return
+    end
+end
 
 prompt={'SUBJECT ID'};
 defAns={'4444'};
@@ -13,27 +19,36 @@ answer=inputdlg(prompt,'Please input subject info',1,defAns);
 
 ID=str2double(answer{1});
 
-if test == 0
+stimSet = questdlg('Which stimulus set would you like to use?','Stimuli',1,2,1);
+
+if dropbox == 1
     studyDir = '/Users/Shared/Dropbox/Devaluation/ImageSelection';
-elseif test == 1
+elseif dropbox == 0
     studyDir = '~/Desktop/ImageSelection/';
 end
 
-imgDir = [studyDir filesep 'Stimuli/CategorizedImages/Unhealthy/'];
 inputDir = [studyDir filesep 'input/'];
-outputDir = [studyDir filesep 'output/'];
 
-addpath(genpath([studyDir filesep 'Stimuli']))
+if stimSet == 1
+    
+    outputDir = [studyDir filesep 'output/Categorized/'];
+    imgDir = [studyDir filesep 'Stimuli/CategorizedImages/Unhealthy/'];
+    
+    convertRedCap2input(ID);
+    
+    %Input categories.
+    subCats = dlmread([inputDir filesep 'categories_DEV' num2str(ID) '.txt'],'\t');
+    catTable = readtable([inputDir filesep 'categories_masterList.txt'],'ReadVariableNames',false);
+    FOODCATS = table2array(catTable);
+    
+elseif stimSet == 2
+    
+    outputDir = [studyDir filesep 'output/WTP/'];
+    imgDir = [studyDir filesep 'Stimuli/WTPImages/'];
 
-convertRedCap2input(ID);
-% add path
+end
 
-%%
-%Input categories.
-subCats = dlmread([inputDir filesep 'categories_DEV' num2str(ID) '.txt'],'\t');
-
-catTable = readtable([inputDir filesep 'categories_masterList.txt'],'ReadVariableNames',false);
-FOODCATS = table2array(catTable);
+addpath(genpath(imgDir))
 
 COLORS = struct;
 COLORS.BLACK = [0 0 0];
@@ -80,27 +95,33 @@ end
 
 % Figure out which unhealthy photos to use:
 
-for ccc = 1:length(subCats);
-    %open each category folder
-    catFolder = FOODCATS{subCats(ccc)};
-    try
-        cd([imgDir filesep catFolder]);
-    catch
-        error('Tried to open the folder for %s category but failed. Ensure it is saved as %s',catFolder,catFolder)
-    end
-    catPics = dir('*.jpg');
+if stimSet == 1
+    for ccc = 1:length(subCats);
+        %open each category folder
+        catFolder = FOODCATS{subCats(ccc)};
+        try
+            cd([imgDir filesep catFolder]);
+        catch
+            error('Tried to open the folder for %s category but failed. Ensure it is saved as %s',catFolder,catFolder)
+        end
+        catPics = dir('*.jpg');
+        catCodes=repmat({ccc-1},length(catPics),1);
+        [catPics(:).catCode] = deal(catCodes{:});
+        %     catPicsCell = struct2cell(catPics);
+        %     catPicnames = catPicsCell(1,:)'
+        if exist('subPics')==1
+            subPics = [subPics; catPics];
+            
+        else subPics = catPics;
+        end
+    end    
+elseif stimSet == 2
+    uPics = dir([imgDir filesep 'unhealthy*.bmp']);
     catCodes=repmat({ccc-1},length(catPics),1);
-    [catPics(:).catCode] = deal(catCodes{:});
-%     catPicsCell = struct2cell(catPics);
-%     catPicnames = catPicsCell(1,:)'
-    if exist('subPics')==1
-        subPics = [subPics; catPics];
-        
-    else subPics = catPics;
-    end
+        [catPics(:).catCode] = deal(catCodes{:});
+    hPics = dir([imgDir filesep 'healthy*.bmp']);
+    subPics = [uPics; hPics];
 end
-
-% subPics struct can take the place of PICS.in.Un
 
 numPics = size(subPics,1);
 rng('default')
@@ -115,11 +136,6 @@ save([outputDir filesep 'imagePrezOrder_DEV' num2str(ID)],'picnames_shuf')
 
 % ImgRatings used to be called PicRatings_CC
 ImgRatings = struct('Rate_App',0,'Tier',catcodes_shuf,'Filename',picnames_shuf); % make TIER actual work here
-
-cd(studyDir)
-if test==1
-    save ImgRatings ImgRatings
-end
 
 commandwindow;
 
@@ -189,7 +205,7 @@ for x = 1:20:length(ImgRatings);
         Screen('Flip',w);
         WaitSecs(.25);
         
-        tp = imread(getfield(ImgRatings,{xy},'filename'));
+        tp = imread(getfield(ImgRatings,{xy},'Filename'));
         tpx = Screen('MakeTexture',w,tp);
         Screen('DrawTexture',w,tpx);
         drawRatings();
@@ -251,12 +267,10 @@ end
 Screen('Flip',w);
 WaitSecs(.5);
 
-save ImgRatings ImgRatings
-
-savefilename = sprintf('DEV%d_ratings',ID); %can use for csv or mat
-
 %% Sort & Save List of Foods.
 %Sort by top appetizing ratings for each set.
+
+savefilename = sprintf('DEV%d_ratings',ID); %can use for csv or mat
 
 fields = {'Rate_App' 'Tier' 'Filename'};
 
@@ -266,28 +280,24 @@ postsort = sortrows(presort,-1);    %Sort descending by column 3
 %Turn back into structure
 ImgRatings_sorted = cell2struct(postsort,fields,2);
 
-% %% Save dat data
-% try
-%     save(savefile,'PicRating');
-% catch
-%     warning('Something is amiss with this save. Retrying to save in a more general location (i.e., in same folder as PicRating_CC.m)...\n');
-%     try
-%         savefilename = sprintf('PicRating_CC_%d-%d.mat',ID,SESS);
-%         save([imgdir filesep savefilename],'PicRating');
-%         warning('Save location:  %s\n',[mfilesdir filesep savefilename]);
-%     catch
-%         warning('STILL problems saving....Look for "PicRating.mat" somewhere on the computer and rename it PicRating_CC_%d_%d.mat\n',ID,SESS);
-%         warning('File might be found in: %s\n',pwd);
-%         savefilename = sprintf('PicRating_CC_%d-%d.mat',ID,SESS);
-%         save(savefilename,'PicRating')
-%     end
-% end
-%
-% %Save to .csv too.
-% PicRating_table = struct2table([PicRating.H; PicRating.U]);
-% savefilename_csv = [subj_imgdir filesep sprintf('PicRating_CC_%d-%d.csv',ID,SESS)];
-% writetable(PicRating_table,savefilename_csv);
+%% Save dat data
+try
+    save([outputDir filesep savefilename '.mat'],'ImgRatings_sorted');
+catch
+    warning('Something is amiss with this save. Retrying to save in a more general location (i.e., in same folder as Dev_ImageSelection.m)...\n');
+    try
+        save([imgDir filesep savefilename '.mat'],'ImgRatings_sorted');
+        warning('Save location:  %s\n',[imgDir filesep savefilename '.mat']);
+    catch
+        warning('STILL problems saving....Look for "ImgRatings_sorted.mat" somewhere on the computer and rename it DEV%d_ratings.mat\n',ID);
+        warning('File might be found in: %s\n',pwd);
+        save([savefilename '.mat'],'ImgRatings_sorted')
+    end
+end
 
+%Save to .csv too.
+ImgRatings_table = struct2table(ImgRatings_sorted);
+writetable(ImgRatings_table,[outputDir filesep savefilename '.csv'],'WriteVariableNames',false);
 
 DrawFormattedText(w,'That concludes this task. The assessor will be with you shortly.','center','center',COLORS.WHITE);
 Screen('Flip',w);

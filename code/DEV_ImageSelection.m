@@ -4,7 +4,13 @@ function DEV_ImageSelection()
 
 global wRect w XCENTER rects mids COLORS KEYS ImgRatings inputDir
 
-test = input('Is this a test? (0=no, 1=yes): ');
+dropbox = input('Is dropbox on your computer? (0=no, 1=yes): ');
+if dropbox == 0
+    desktop = input('Is the study dir on your Desktop? (0=no, 1=yes): ');
+    if desktop == 0
+        return
+    end
+end
 
 prompt={'SUBJECT ID'};
 defAns={'4444'};
@@ -13,27 +19,38 @@ answer=inputdlg(prompt,'Please input subject info',1,defAns);
 
 ID=str2double(answer{1});
 
-if test == 0
+stimSet = questdlg('Which stimulus set would you like to use?','Stimuli',1,2,1);
+
+if dropbox == 1
     studyDir = '/Users/Shared/Dropbox/Devaluation/ImageSelection';
-elseif test == 1
+elseif dropbox == 0
     studyDir = '~/Desktop/ImageSelection/';
 end
 
-imgDir = [studyDir filesep 'Stimuli/CategorizedImages/Unhealthy/'];
 inputDir = [studyDir filesep 'input/'];
-outputDir = [studyDir filesep 'output/Categorized/'];
 
-addpath(genpath([studyDir filesep 'Stimuli']))
+if stimSet == 1
+    
+    outputDir = [studyDir filesep 'output/Categorized/'];
+    imgDir = [studyDir filesep 'Stimuli/CategorizedImages/Unhealthy/'];
+    
+    convertRedCap2input(ID);
+    
+    %Input categories.
+    subCats = dlmread([inputDir filesep 'categories_DEV' num2str(ID) '.txt'],'\t');
+    catTable = readtable([inputDir filesep 'categories_masterList.txt'],'ReadVariableNames',false);
+    FOODCATS = table2array(catTable);
+    
+elseif stimSet == 2
+    
+    outputDir = [studyDir filesep 'output/WTP/'];
+    imgDir = [studyDir filesep 'Stimuli/WTPImages/'];
+    FOODCATS = {'unhealthy' 'healthy' };
+    subCats = [1; 2];
 
-convertRedCap2input(ID);
-% add path
+end
 
-%%
-%Input categories.
-subCats = dlmread([inputDir filesep 'categories_DEV' num2str(ID) '.txt'],'\t');
-
-catTable = readtable([inputDir filesep 'categories_masterList.txt'],'ReadVariableNames',false);
-FOODCATS = table2array(catTable);
+addpath(genpath(imgDir))
 
 COLORS = struct;
 COLORS.BLACK = [0 0 0];
@@ -80,6 +97,12 @@ end
 
 % Figure out which unhealthy photos to use:
 
+if stimSet == 1
+    extens = '.jpg';
+elseif stimSet == 2
+    extens = '.bmp';
+end
+
 for ccc = 1:length(subCats);
     %open each category folder
     catFolder = FOODCATS{subCats(ccc)};
@@ -88,19 +111,15 @@ for ccc = 1:length(subCats);
     catch
         error('Tried to open the folder for %s category but failed. Ensure it is saved as %s',catFolder,catFolder)
     end
-    catPics = dir('*.jpg');
+    
+    catPics = dir(['*' extens]);
     catCodes=repmat({ccc-1},length(catPics),1);
     [catPics(:).catCode] = deal(catCodes{:});
-%     catPicsCell = struct2cell(catPics);
-%     catPicnames = catPicsCell(1,:)'
     if exist('subPics')==1
-        subPics = [subPics; catPics];
-        
+        subPics = [subPics; catPics];    
     else subPics = catPics;
     end
 end
-
-% subPics struct can take the place of PICS.in.Un
 
 numPics = size(subPics,1);
 rng('default')
@@ -114,7 +133,7 @@ catcodes_shuf = subPicsCell_shuf(:,7);
 save([outputDir filesep 'imagePrezOrder_DEV' num2str(ID)],'picnames_shuf')
 
 % ImgRatings used to be called PicRatings_CC
-ImgRatings = struct('Rate_App',0,'Tier',catcodes_shuf,'Filename',picnames_shuf); % make TIER actual work here
+ImgRatings = struct('Rate_App',0,'Tier',catcodes_shuf,'Filename',picnames_shuf);
 
 commandwindow;
 
