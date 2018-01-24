@@ -273,10 +273,10 @@ savefilename = sprintf('DEV%d_ratings',ID); %can use for csv or mat
 fields = {'Rate_App' 'Tier' 'Filename'};
 
 presort = struct2cell(ImgRatings)';
-postsort = sortrows(presort,-1);    %Sort descending by column 3
+ImgRatings_sorted = sortrows(presort,-1);    %Sort descending by column 3
 
 %Turn back into structure
-ImgRatings_sorted = cell2struct(postsort,fields,2);
+ImgRatings_sorted_struct = cell2struct(ImgRatings_sorted,fields,2);
 
 %% Save dat data
 try
@@ -294,7 +294,7 @@ catch
 end
 
 %Save to .csv too.
-ImgRatings_table = struct2table(ImgRatings_sorted);
+ImgRatings_table = struct2table(ImgRatings_sorted_struct);
 writetable(ImgRatings_table,[outputDir filesep savefilename '.csv'],'WriteVariableNames',false);
 
 DrawFormattedText(w,'That concludes this task. The assessor will be with you shortly.','center','center',COLORS.WHITE);
