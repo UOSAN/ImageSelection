@@ -14,6 +14,9 @@ end
 
 prompt={'SUBJECT ID'};
 defAns={'4444'};
+minCravedImages = 10; % for testing; will be 64
+% minCravedImages = 64;
+
 
 answer=inputdlg(prompt,'Please input subject info',1,defAns);
 
@@ -266,7 +269,7 @@ Screen('Flip',w);
 WaitSecs(.5);
 
 %% Sort & Save List of Foods.
-%Sort by top appetizing ratings for each set.
+% Sort by top appetizing ratings.
 
 savefilename = sprintf('DEV%d_ratings',ID); %can use for csv or mat
 
@@ -300,8 +303,16 @@ writetable(ImgRatings_table,[outputDir filesep savefilename '.csv'],'WriteVariab
 DrawFormattedText(w,'That concludes this task. The assessor will be with you shortly.','center','center',COLORS.WHITE);
 Screen('Flip',w);
 WaitSecs(5);
-
 sca
+%% Check if enough trials
+
+tiers = cell2mat(ImgRatings_sorted(:,2));
+ratings = cell2mat(ImgRatings_sorted(:,1));
+cravedIdx = (tiers > 0) & (ratings > 0); % only select images from craved categories
+
+if sum(cravedIdx) < minCravedImages
+    error('Only %d usable images!',sum(cravedIdx))
+end
 
 end
 
