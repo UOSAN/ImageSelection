@@ -25,7 +25,7 @@ ID=str2double(answer{1});
 stimSet = questdlg('Which stimulus set would you like to use?','Stimuli',1,2,1);
 
 if dropbox == 1
-    studyDir = '/Users/Shared/Dropbox/Devaluation/ImageSelection';
+    studyDir = '~/Dropbox/Devaluation/ImageSelection';
 elseif dropbox == 0
     studyDir = '~/Desktop/ImageSelection/';
 end
