@@ -22,6 +22,14 @@ answer=inputdlg(prompt,'Please input subject info',1,defAns);
 
 ID=str2double(answer{1});
 
+if ID<10
+    placeholder = '00';
+elseif ID<100
+    placeholder = '0';
+else placeholder = '';
+end
+
+
 stimSet = questdlg('Which stimulus set would you like to use?','Stimuli',1,2,1);
 
 if dropbox == 1
@@ -37,10 +45,10 @@ if stimSet == 1
     outputDir = [studyDir filesep 'output/Categorized/'];
     imgDir = [studyDir filesep 'Stimuli/CategorizedImages/Unhealthy/'];
     
-    convertRedCap2input(ID);
+    convertRedCap2input(ID,placeholder);
     
     %Input categories.
-    subCats = dlmread([inputDir filesep 'categories_DEV' num2str(ID) '.txt'],'\t');
+    subCats = dlmread([inputDir filesep 'categories_DEV' placeholder num2str(ID) '.txt'],'\t');
     catTable = readtable([inputDir filesep 'categories_masterList.txt'],'ReadVariableNames',false);
     FOODCATS = table2array(catTable);
     
@@ -87,7 +95,7 @@ catch
 end
 
 % Set up output filename
-outputFile = [outputDir filesep sprintf('ImgRatings_DEV%d.mat',ID)];
+outputFile = [outputDir filesep sprintf('ImgRatings_DEV%s%d.mat',placeholder,ID)];
 
 if exist(outputFile,'file') == 2;
     commandwindow;
@@ -133,7 +141,7 @@ subPicsCell_shuf = struct2cell(subPics_shuf)';
 picnames_shuf = subPicsCell_shuf(:,1);
 catcodes_shuf = subPicsCell_shuf(:,7);
 
-save([outputDir filesep 'imagePrezOrder_DEV' num2str(ID)],'picnames_shuf')
+save([outputDir filesep 'imagePrezOrder_DEV' placeholder num2str(ID)],'picnames_shuf')
 
 % ImgRatings used to be called PicRatings_CC
 ImgRatings = struct('Rate_App',0,'Tier',catcodes_shuf,'Filename',picnames_shuf);
@@ -271,7 +279,7 @@ WaitSecs(.5);
 %% Sort & Save List of Foods.
 % Sort by top appetizing ratings.
 
-savefilename = sprintf('DEV%d_ratings',ID); %can use for csv or mat
+savefilename = sprintf('DEV%s%d_ratings',placeholder,ID); %can use for csv or mat
 
 fields = {'Rate_App' 'Tier' 'Filename'};
 
@@ -290,7 +298,7 @@ catch
         save([imgDir filesep savefilename '.mat'],'ImgRatings_sorted');
         warning('Save location:  %s\n',[imgDir filesep savefilename '.mat']);
     catch
-        warning('STILL problems saving....Look for "ImgRatings_sorted.mat" somewhere on the computer and rename it DEV%d_ratings.mat\n',ID);
+        warning('STILL problems saving....Look for "ImgRatings_sorted.mat" somewhere on the computer and rename it DEV%s%d_ratings.mat\n',placeholder,ID);
         warning('File might be found in: %s\n',pwd);
         save([savefilename '.mat'],'ImgRatings_sorted')
     end
@@ -317,7 +325,7 @@ end
 end
 
 %%
-function [] = convertRedCap2input(currentSub)
+function [] = convertRedCap2input(currentSub,placeholder)
 
 global inputDir
 
@@ -357,7 +365,7 @@ for v = 1:length(vars)
     eval(saveIdxStr)
 end
 
-dlmwrite(['categories_DEV' num2str(currentSub) '.txt'],idxList,'delimiter','\t')
+dlmwrite(['categories_DEV' placeholder num2str(currentSub) '.txt'],idxList,'delimiter','\t')
 
 end
 
