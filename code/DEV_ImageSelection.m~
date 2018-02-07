@@ -4,13 +4,22 @@ function DEV_ImageSelection()
 
 global wRect w XCENTER rects mids COLORS KEYS ImgRatings inputDir
 
-testing = 0; % set this to testing=1 if you have no dropbox
+% dropbox = input('Is dropbox on your computer? (0=no, 1=yes): ');
+% if dropbox == 0
+%     desktop = input('Is the study dir on your Desktop? (0=no, 1=yes): ');
+%     if desktop == 0
+%         return
+%     end
+% end
+
+testing = 0;
 dropbox = 0;
 
 prompt={'SUBJECT ID'};
-defAns={'999'};
+defAns={'4444'};
 minCravedImages = 10; % for testing; will be 64
 % minCravedImages = 64;
+
 
 answer=inputdlg(prompt,'Please input subject info',1,defAns);
 
@@ -23,6 +32,7 @@ elseif ID<100
 else placeholder = '';
 end
 
+
 stimSet = questdlg('Which stimulus set would you like to use?','Stimuli',1,2,1);
 
 if dropbox == 1
@@ -31,13 +41,9 @@ elseif dropbox == 0
     studyDir = '~/Desktop/ImageSelection/';
 end
 
-if testing
-     studyDir_inout = '~/Desktop/ImageSelection';
-else
-    studyDir_inout = '~/Dropbox/Devaluation/ImageSelection';
-end
+studyDir_inout = '~/Dropbox/Devaluation/ImageSelection';
 
-inputDir = [studyDir_inout filesep 'input/'];
+inputDir = [studyDir filesep 'input/'];
 
 if stimSet == 1
     
@@ -53,7 +59,7 @@ if stimSet == 1
     
 elseif stimSet == 2
     
-    outputDir = [studyDir_inout filesep 'output/WTP/'];
+    outputDir = [studyDir filesep 'output/WTP/'];
     imgDir = [studyDir filesep 'Stimuli/WTPImages/'];
     FOODCATS = {'unhealthy' 'healthy' };
     subCats = [1; 2];
