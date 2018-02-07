@@ -7,7 +7,7 @@ global wRect w XCENTER rects mids COLORS KEYS ImgRatings inputDir
 testing = 0; % set this to testing=1 if you have no dropbox
 studyDir = '~/Desktop/DEV/ImageSelection/';
 
-prompt={'SUBJECT ID'};
+prompt={'SUBJECT ID (3 DIGITS)'};
 defAns={'999'};
 minCravedImages = 10; % for testing; will be 64
 % minCravedImages = 64;
@@ -26,9 +26,9 @@ end
 stimSet = questdlg('Which stimulus set would you like to use?','Stimuli',1,2,1);
 
 if testing
-     studyDir_inout = '~/Desktop/ImageSelection';
+     studyDir_inout = '~/Desktop/ImageSelection/';
 else
-    studyDir_inout = '~/Dropbox/Devaluation/ImageSelection';
+    studyDir_inout = '~/Dropbox (PfeiBer Lab)/Devaluation/Tasks/ImageSelection/';
 end
 
 inputDir = [studyDir_inout filesep 'input/'];
@@ -329,12 +329,15 @@ currentRedcapFile = redcapFiles(idx(end)).name;
 
 redcapTable=readtable([inputDir filesep currentRedcapFile]);
 
-subRows = redcapTable.RecordID==currentSub;
-sessionRows = strcmp(redcapTable.EventName,'Session 0');
-catRow = subRows & sessionRows;
+subCode = ['DEV' placeholder num2str(currentSub)];
+subRows = strcmp(redcapTable.DEVID,subCode);
+% sessionRows = strcmp(redcapTable.EventName,'Session 0');
+% catRow = subRows & sessionRows;
+catRow = subRows;
 
 if ~(sum(catRow)==1)
-    error('More than one Session 0 entry for sub %d in the RedCap raw file',currentSub)
+    error('More than one entry for sub %d in the RedCap raw file',currentSub)
+%     error('More than one Session 0 entry for sub %d in the RedCap raw file',currentSub)
 else
    food0 = redcapTable{catRow,'FoodCategory_LeastCravedFood'}{1};
    food1 = redcapTable{catRow,'FoodCategoryRank_1'}{1};
