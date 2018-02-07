@@ -5,7 +5,7 @@ function DEV_ImageSelection()
 global wRect w XCENTER rects mids COLORS KEYS ImgRatings inputDir
 
 testing = 0; % set this to testing=1 if you have no dropbox
-dropbox = 0;
+studyDir = '~/Desktop/DEV/ImageSelection/';
 
 prompt={'SUBJECT ID'};
 defAns={'999'};
@@ -24,12 +24,6 @@ else placeholder = '';
 end
 
 stimSet = questdlg('Which stimulus set would you like to use?','Stimuli',1,2,1);
-
-if dropbox == 1
-    studyDir = '~/Dropbox/Devaluation/ImageSelection';
-elseif dropbox == 0
-    studyDir = '~/Desktop/ImageSelection/';
-end
 
 if testing
      studyDir_inout = '~/Desktop/ImageSelection';
