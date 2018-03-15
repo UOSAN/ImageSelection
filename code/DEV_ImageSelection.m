@@ -327,7 +327,7 @@ redcapFiles = dir([inputDir filesep 'Devaluation_DATA_LABELS*']);
 [~,idx] = sort([redcapFiles.datenum]);
 currentRedcapFile = redcapFiles(idx(end)).name;
 
-redcapTable=readtable([inputDir filesep currentRedcapFile]);
+redcapTable=readtable([inputDir filesep currentRedcapFile],'ReadVariableNames',1); %Lauren added this
 
 subCode = ['DEV' placeholder num2str(currentSub)];
 subRows = strcmp(redcapTable.DEVID,subCode);
