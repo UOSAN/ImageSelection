@@ -331,19 +331,13 @@ redcapTable=readtable([inputDir filesep currentRedcapFile],'ReadVariableNames',1
 
 subCode = ['DEV' placeholder num2str(currentSub)];
 subRows = strcmp(redcapTable.DEVID,subCode);
-% sessionRows = strcmp(redcapTable.EventName,'Session 0');
-% catRow = subRows & sessionRows;
-catRow = subRows;
+sessionRows = strcmp(redcapTable.EventName,'Session 0');
+catRow = subRows & sessionRows;
 
-if ~(sum(catRow)==1)
-    error('More than one entry for sub %d in the RedCap raw file',currentSub)
-%     error('More than one Session 0 entry for sub %d in the RedCap raw file',currentSub)
-else
-   food0 = redcapTable{catRow,'FoodCategory_LeastCravedFood'}{1};
-   food1 = redcapTable{catRow,'FoodCategoryRank_1'}{1};
-   food2 = redcapTable{catRow,'FoodCategoryRank_2'}{1};
-   food3 = redcapTable{catRow,'FoodCategoryRank_3'}{1};
-end
+food0 = redcapTable{catRow,'FoodCategory_LeastCravedFood'}{1};
+food1 = redcapTable{catRow,'FoodCategoryRank_1'}{1};
+food2 = redcapTable{catRow,'FoodCategoryRank_2'}{1};
+food3 = redcapTable{catRow,'FoodCategoryRank_3'}{1};
 
 cd(inputDir)
 catTable = readtable('categories_masterList.txt','ReadVariableNames',false);
