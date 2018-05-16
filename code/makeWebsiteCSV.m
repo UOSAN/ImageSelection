@@ -14,13 +14,7 @@ DIR.task = [DIR.study filesep 'ImageSelection/'];
 
 DIR.img = [DIR.task '/Stimuli/CategorizedImages/'];
 DIR.input = [DIR.task filesep 'input/'];
-DIR.output = [DIR.task filesep 'output/Categorized/']; % this is where we'll load the ratings from
 DIR.output_dropbox = '~/Dropbox (PfeiBer Lab)/Devaluation/Tasks/ImageSelection/output/Categorized';
-
-% if testing
-%     DIR.imSel = '~/Desktop/ImageSelection/';
-% else DIR.imSel = '~/Dropbox (PfeiBer Lab)/Devaluation/Tasks/ImageSelection/';
-% end
 
 trialsPerType = 60;
 subject_code=input('Enter subject number (3 digits): ');
@@ -115,7 +109,7 @@ hStim_website(:,2)={1};
 
 %rating
 uStim_website(:,3)=uStim_ratings;
-hStim_website(:,3)={NaN}; % healthy images are not rated
+hStim_website(:,3)={0}; % healthy images are not rated
 
 %chosen
 uStim_website(:,4)={1};
