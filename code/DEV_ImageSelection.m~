@@ -9,8 +9,8 @@ studyDir = '~/Desktop/DEV/ImageSelection/';
 
 prompt={'SUBJECT ID (3 DIGITS)'};
 defAns={'999'};
-% minCravedImages = 10; % for testing; will be 64
-minCravedImages = 64;
+minCravedImages = 10; % for testing; will be 64
+% minCravedImages = 64;
 
 answer=inputdlg(prompt,'Please input subject info',1,defAns);
 
@@ -302,7 +302,7 @@ ImgRatings_table = struct2table(ImgRatings_sorted_struct);
 writetable(ImgRatings_table,[outputDir filesep savefilename '.csv'],'WriteVariableNames',false);
 
 %save website CSV
-makeWebsiteCSV(ID, placeholder, studyDir, studyDir_inout);
+makeWebsiteCSV();
 
 DrawFormattedText(w,'That concludes this task. The assessor will be with you shortly.','center','center',COLORS.WHITE);
 Screen('Flip',w);
@@ -315,7 +315,7 @@ ratings = cell2mat(ImgRatings_sorted(:,1));
 cravedIdx = (tiers > 0) & (ratings > 0); % only select images from craved categories
 
 if sum(cravedIdx) < minCravedImages
-    warning('Only %d usable images!',sum(cravedIdx))
+    error('Only %d usable images!',sum(cravedIdx))
 end
 
 end
@@ -798,15 +798,29 @@ function [] = makeWebsiteCSV(ID, placeholder, studyDir, studyDir_inout)
 
 subject_code = ID;
 
-% studyDir is Desktop Image Selection
-% studyDir_inout is dropbox ImageSelection
+studyDir = '~/Desktop/DEV/ImageSelection/';
+% studyDir_inout is dropbox ImageSelect
+if testing
+     studyDir_inout = '~/Desktop/ImageSelection/';
+else
+    studyDir_inout = '~/Dropbox (PfeiBer Lab)/Devaluation/Tasks/ImageSelection/';
+end
 
-DIR.task = studyDir;
+DIR.task = [DIR.study filesep 'ImageSelection/'];
 
-DIR.img = [DIR.task filesep 'Stimuli/CategorizedImages/'];
-DIR.output_dropbox = [studyDir_inout filesep 'output/Categorized/'];
+DIR.img = [DIR.task '/Stimuli/CategorizedImages/'];
+DIR.input = [DIR.task filesep 'input/'];
+DIR.output = [DIR.task filesep 'output/Categorized/']; % this is where we'll load the ratings from
+DIR.output_dropbox = '~/Dropbox (PfeiBer Lab)/Devaluation/Tasks/ImageSelection/output/Categorized';
+
+% if testing
+%     DIR.imSel = '~/Desktop/ImageSelection/';
+% else DIR.imSel = '~/Dropbox (PfeiBer Lab)/Devaluation/Tasks/ImageSelection/';
+% end
 
 trialsPerType = 60;
+subject_code=input('Enter subject number (3 digits): ');
+
 
 % GET HEALTHY IMAGES
 hStimStruct = dir([DIR.img filesep 'Healthy' filesep 'healthy*.png']);
@@ -891,7 +905,7 @@ hStim_website(:,2)={1};
 
 %rating
 uStim_website(:,3)=uStim_ratings;
-hStim_website(:,3)={0}; % healthy images are not rated
+hStim_website(:,3)={NaN}; % healthy images are not rated
 
 %chosen
 uStim_website(:,4)={1};
