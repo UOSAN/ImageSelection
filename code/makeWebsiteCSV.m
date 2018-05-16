@@ -1,7 +1,7 @@
 function [] = makeWebsiteCSV()
 
-% testing = 0;
-testing = 1;
+testing = 0;
+% testing = 1;
 
 
 if testing
@@ -15,7 +15,7 @@ DIR.task = [DIR.study filesep 'ImageSelection/'];
 DIR.img = [DIR.task '/Stimuli/CategorizedImages/'];
 DIR.input = [DIR.task filesep 'input/'];
 DIR.output = [DIR.task filesep 'output/Categorized/']; % this is where we'll load the ratings from
-DIR.output_dropbox = '~/Dropbox (PfeiBer Lab)/Devaluation/Tasks/ImageSelection/output/';
+DIR.output_dropbox = '~/Dropbox (PfeiBer Lab)/Devaluation/Tasks/ImageSelection/output/Categorized';
 
 % if testing
 %     DIR.imSel = '~/Desktop/ImageSelection/';
@@ -49,7 +49,7 @@ end
 % GET UNHEALTHY images
 % Load ratings .mat
 
-load([DIR.output filesep 'DEV' placeholder num2str(subject_code) '_ratings.mat'])
+load([DIR.output_dropbox filesep 'DEV' placeholder num2str(subject_code) '_ratings.mat'])
 tiers = cell2mat(ImgRatings_sorted(:,2));
 ratings = cell2mat(ImgRatings_sorted(:,1));
 cravedIdx = (tiers > 0) & (ratings > 0); % only select images from craved categories
@@ -63,7 +63,9 @@ for r=minRating:maxRating
     rIdx = (ratings==r & tiers > 0);
     stimWithinRating = [ImgRatings_sorted(rIdx,3) ImgRatings_sorted(rIdx,1)];
     if ~isempty(stimWithinRating) 
-        stimWithinRating = Shuffle(stimWithinRating);
+        
+        shuffInd = Shuffle(1:size(stimWithinRating,1));
+        stimWithinRating = stimWithinRating(shuffInd,:);
         
         % Append to beginning of cravedStim list
         if exist('cravedStim_shufWithin')==1
@@ -92,6 +94,12 @@ else
     uStim = stimWReps(1:trialsPerType,1);
     uStim_ratings = stimWReps(1:trialsPerType,2);
 end
+
+% CHANGE FILE EXTENSION
+for i=1:size(uStim,1)
+    uStim{i} = [uStim{i}(1:end-3) 'png'];
+end
+
 
 % create website-formatted csv
 uStim_website = cell(length(uStim),5);
@@ -125,6 +133,6 @@ stim_website_struct = cell2struct(stim_website,fields,2);
 %Save to .csv too.
 stim_website_table = struct2table(stim_website_struct);
 savefilename = sprintf('DEV%s%d_ratings_forWebsite',placeholder,subject_code);
-writetable(stim_website_table,[DIR.output filesep savefilename '.csv'],'WriteVariableNames',true);
+writetable(stim_website_table,[DIR.output_dropbox filesep savefilename '.csv'],'WriteVariableNames',true);
 
 end
