@@ -127,11 +127,4 @@ stim_website_table = struct2table(stim_website_struct);
 savefilename = sprintf('DEV%s%d_ratings_forWebsite',placeholder,subject_code);
 writetable(stim_website_table,[DIR.output filesep savefilename '.csv'],'WriteVariableNames',true);
 
-
-fid = fopen('test.csv','w');
-for r = 1:size(stim_website,1)
-    fprintf(fid, '%s\n', stim_website{r,:});
-end
-fclose(fid);
-
 end
