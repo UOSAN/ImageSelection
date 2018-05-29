@@ -807,20 +807,29 @@ DIR.img = [DIR.task filesep 'Stimuli/CategorizedImages/'];
 DIR.output_dropbox = [studyDir_inout filesep 'output/Categorized/'];
 
 trialsPerType = 60;
+num_hStim = 82;
 
 % GET HEALTHY IMAGES
-hStimStruct = dir([DIR.img filesep 'Healthy' filesep 'healthy*.png']);
-hStimCell = struct2cell(hStimStruct)';
-hStim = hStimCell(:,1);
-hStim = Shuffle(hStim);
-hStim = hStim(1:trialsPerType);
+% hStimStruct = dir([DIR.img filesep 'Healthy' filesep 'healthy*.png']);
+% hStimCell = struct2cell(hStimStruct)';
+% hStim = hStimCell(:,1);
+% hStim = Shuffle(hStim);
+hStim = cell(num_hStim,1);
+for i = 1:num_hStim
+    if i<10
+        imPlaceholder = '0';
+    else
+        imPlaceholder = '';
+    end
+    hStim{i} = {['healthy' imPlaceholder num2str(i) '.png']};
+end
 
 % pick top trialsPerType for unhealthy images
-if trialsPerType <= length(hStim)
-    hStim = hStim(1:trialsPerType);
-else
-    error('Not enough healthy stim! You''ve requested more healthy images than there are.')
-end
+% if trialsPerType <= length(hStim)
+%     hStim = hStim(1:trialsPerType);
+% else
+%     error('Not enough healthy stim! You''ve requested more healthy images than there are.')
+% end
 
 % GET UNHEALTHY images
 % Load ratings .mat
