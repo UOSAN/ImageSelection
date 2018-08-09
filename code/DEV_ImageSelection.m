@@ -326,7 +326,8 @@ function [] = convertRedCap2input(currentSub,placeholder)
 global inputDir
 
 %Find most recent redcap LABELS file
-redcapFiles = dir([inputDir filesep 'Devaluation_DATA_LABELS*']);
+% redcapFiles = dir([inputDir filesep 'Devaluation_DATA_LABELS*']);
+redcapFiles = dir([inputDir filesep '*DATA_LABELS*']);
 [~,idx] = sort([redcapFiles.datenum]);
 currentRedcapFile = redcapFiles(idx(end)).name;
 
