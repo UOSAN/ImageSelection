@@ -59,9 +59,8 @@ Trials are repeated 40 times, in the behavioral version, or 20 times, in the sca
 - On a black background:
 - Display rating instructions, in grey text, at the top of the screen. The text is: `How appetizing is this food?`
 - Display the image stimulus.
-- Display the 4 squares evenly spaced in a row, from left to right, containing the text "1", "2", "3", "4". Display a fifth square in the same row, further spaced to the right, containing the text "0"
-- When the participant selects a rating, provide visual feedback by changing the background color of the square, corresponding to the selected rating, to green.
-
+- Display the 4 squares evenly spaced in a row, from left to right, containing the text "1", "2", "3", "4". Display a fifth square in the same row, further spaced to the right, containing the text "0".
+- When the participant selects a rating, provide visual feedback by changing the background color of the square corresponding to the selected rating to green (RGB color in hexadecimal notation 0x00ff00).
 
 Duration depends on participant behavior.
 
