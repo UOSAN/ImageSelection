@@ -11,10 +11,7 @@ The ImageSelection task presents image stimuli of foods that are rated for how a
 
 1. Launch the PsychoPy Builder.
 2. Open the file `ImageSelection.psyexp`.
-3. Start the experiment by selecting the Tools -> Run menu item or click the run icon:
-
-![run icon](./run_icon.png)
-
+3. Start the experiment by selecting the Tools -> Run menu item.
 4. Fill in the subject number, and the stimulus set. The stimulus set should be "1" for the categorized images, and "2" for WillingnessToPay. The task will start automatically after that.
 
 ## Task description
@@ -51,8 +48,6 @@ After all the trials are completed, end text is displayed for 5 seconds. The end
 ```
 That concludes this task. The assessor will be with you shortly.
 ```
-
-Trials are repeated 40 times, in the behavioral version, or 20 times, in the scanner version.
 
 ### Trial structure
 
