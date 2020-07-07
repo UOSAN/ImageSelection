@@ -63,7 +63,7 @@ Duration depends on participant behavior.
 
 The task is configured by a file containing the categories of food, named `categories_DEV<participant_number>.txt`, i.e. `categories_DEV123.txt` for the participant number 123. The file must contain four lines. The first line is number indicating the category of non-craved food. The next three lines are numbers indicating the categories of craved food.
 
-The location of the images is in the labwide Dropbox folder.
+The configuration must be located in the task directory. The image stimuli must be in the Stimuli directory in the task directory.
 
 ## Output
 The task outputs the standard PsychoPy log, csv, and psydat files. It also outputs a file named `DEV<participant_number>_ratings_forWebsite.csv`, and `imagePrezOrder_DEV<participant_number>.txt`.
