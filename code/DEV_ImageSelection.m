@@ -28,7 +28,7 @@ stimSet = questdlg('Which stimulus set would you like to use?','Stimuli',1,2,1);
 if testing
      studyDir_inout = '~/Desktop/ImageSelection/';
 else
-    studyDir_inout = '~/Dropbox (PfeiBer Lab)/Devaluation/Tasks/ImageSelection/';
+    studyDir_inout = '~/Dropbox (University of Oregon)/UO-SAN Lab/Berkman Lab/Devaluation/Tasks/ImageSelection/';
 end
 
 inputDir = [studyDir_inout filesep 'input/'];
